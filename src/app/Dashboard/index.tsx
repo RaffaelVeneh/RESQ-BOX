@@ -107,6 +107,59 @@ export default function Dashboard() {
               <span className="font-label-caps text-label-caps">Buat Proyek Baru</span>
             </button>
           </div>
+
+          {/* ── Mode Selector ── */}
+          <div className="mt-md">
+            <div className="flex justify-between items-end border-b-2 border-outline-variant pb-xs mb-md">
+              <h2 className="font-headline-lg text-headline-lg text-primary">Mode Belajar</h2>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-gutter">
+              {/* Coding Lab card */}
+              <button
+                onClick={() => navigate('/workspace')}
+                className="relative flex flex-col items-start text-left p-md rounded-2xl bg-[#FFF7ED] border-2 border-[#F97316] hover:shadow-lg hover:-translate-y-1 transition-all duration-200"
+              >
+                <div className="flex items-center gap-sm mb-sm">
+                  <span className="material-symbols-outlined text-[#EA580C] text-3xl">code</span>
+                  <div>
+                    <div className="font-label-caps text-label-caps text-[#9A3412] uppercase">Arduino Blockly</div>
+                    <h3 className="font-title-md text-title-md font-bold text-on-surface">Coding Lab</h3>
+                  </div>
+                </div>
+                <p className="font-body-sm text-body-sm text-on-surface-variant mb-md leading-relaxed">
+                  Buat program Arduino dengan blok visual. Export ke Wokwi untuk simulasi sirkuit.
+                </p>
+                <div className="flex items-center gap-xs text-[#EA580C] font-label-sm text-label-sm">
+                  <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>arrow_forward</span>
+                  Buka Editor
+                </div>
+              </button>
+
+              {/* Mitigasi Bencana card */}
+              <button
+                onClick={() => navigate('/mitigation')}
+                className="relative flex flex-col items-start text-left p-md rounded-2xl bg-[#F0FDF4] border-2 border-[#16A34A] hover:shadow-lg hover:-translate-y-1 transition-all duration-200"
+              >
+                <div className="absolute top-sm right-sm px-xs py-[2px] rounded-full bg-[#16A34A] text-white font-label-caps text-label-caps">
+                  Baru!
+                </div>
+                <div className="flex items-center gap-sm mb-sm">
+                  <span className="material-symbols-outlined text-[#15803D] text-3xl">emergency</span>
+                  <div>
+                    <div className="font-label-caps text-label-caps text-[#14532D] uppercase">Puzzle Interaktif</div>
+                    <h3 className="font-title-md text-title-md font-bold text-on-surface">Mitigasi Bencana</h3>
+                  </div>
+                </div>
+                <p className="font-body-sm text-body-sm text-on-surface-variant mb-md leading-relaxed">
+                  Susun urutan tindakan penyelamatan yang benar. Gempa, banjir, kebakaran & tsunami!
+                </p>
+                <div className="flex items-center gap-xs text-[#15803D] font-label-sm text-label-sm">
+                  <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>drag_indicator</span>
+                  5 skenario tersedia
+                </div>
+              </button>
+            </div>
+          </div>
         </section>
 
         {/* Right Side: Mission Center */}

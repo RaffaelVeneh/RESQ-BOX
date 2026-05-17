@@ -1,4 +1,4 @@
-﻿import * as Blockly from 'blockly/core';
+import * as Blockly from 'blockly/core';
 import { arduinoGenerator } from '../arduinoGenerator';
 
 export function defineCoreBlocks() {
@@ -19,7 +19,8 @@ export function defineCoreBlocks() {
   arduinoGenerator.forBlock['arduino_setup_loop'] = function (block: Blockly.Block) {
     const setupBranch = arduinoGenerator.statementToCode(block, 'SETUP') || '';
     const loopBranch = arduinoGenerator.statementToCode(block, 'LOOP') || '';
-    return `void setup() {\n${setupBranch}}\n\nvoid loop() {\n${loopBranch}}\n`;
+    // Wokwi-compatible format: #include <Arduino.h> is required for Wokwi projects
+    return `#include <Arduino.h>\n\nvoid setup() {\n${setupBranch}}\n\nvoid loop() {\n${loopBranch}}\n`;
   };
 
   // 2. Pin Mode — "Set Pin X as OUTPUT/INPUT" — goes in Setup
