@@ -15,41 +15,57 @@ const INITIAL_TOOLBOX = {
   contents: [
     {
       kind: 'category',
-      name: 'Arduino',
+      name: '⚙️ Arduino',
       colour: '#fd761a',
       contents: [
         { kind: 'block', type: 'arduino_setup_loop' },
-        { kind: 'block', type: 'arduino_pin_mode' },   // pinMode — goes in Setup
+        { kind: 'block', type: 'arduino_pin_mode' },
+        { kind: 'block', type: 'arduino_serial_print' },
       ],
     },
     {
       kind: 'category',
-      name: 'Output',
+      name: '💡 Output',
       colour: '#0D9488',
       contents: [
-        { kind: 'block', type: 'arduino_digital_write' }, // Set Pin X to HIGH/LOW — goes in Loop
-        { kind: 'block', type: 'led_builtin_set' },        // Shortcut: Builtin LED (pin 13)
+        { kind: 'block', type: 'arduino_led_write' },
+        { kind: 'block', type: 'arduino_digital_write' },
+        { kind: 'block', type: 'arduino_buzzer' },
+        { kind: 'block', type: 'arduino_buzzer_stop' },
         { kind: 'block', type: 'arduino_delay' },
       ],
     },
     {
       kind: 'category',
-      name: 'Input',
-      colour: '#2563EB',
+      name: '⚙️ Aktuator',
+      colour: '#7C3AED',
       contents: [
-        { kind: 'block', type: 'arduino_digital_read' }, // Button / digital sensor
-        { kind: 'block', type: 'arduino_analog_read' },  // Water / vibration sensor (0-1023)
+        { kind: 'block', type: 'arduino_motor_speed' },
+        { kind: 'block', type: 'arduino_servo' },
       ],
     },
     {
       kind: 'category',
-      name: 'Logic',
-      colour: '#7C3AED',
+      name: '📡 Sensor',
+      colour: '#2563EB',
+      contents: [
+        { kind: 'block', type: 'arduino_vibration_read' },
+        { kind: 'block', type: 'arduino_water_read' },
+        { kind: 'block', type: 'arduino_temp_read' },
+        { kind: 'block', type: 'arduino_digital_read' },
+        { kind: 'block', type: 'arduino_analog_read' },
+      ],
+    },
+    {
+      kind: 'category',
+      name: '🔀 Logika',
+      colour: '#DB2777',
       contents: [
         { kind: 'block', type: 'controls_if' },
         { kind: 'block', type: 'logic_compare' },
         { kind: 'block', type: 'logic_operation' },
         { kind: 'block', type: 'math_number' },
+        { kind: 'block', type: 'arduino_text' },
       ],
     },
   ],
