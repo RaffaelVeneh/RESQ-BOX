@@ -1,0 +1,187 @@
+@import "tailwindcss";
+
+@theme {
+  /* ─── Brand Colors ─── */
+  --color-primary: #091426;
+  --color-primary-container: #1e293b;
+  --color-on-primary: #ffffff;
+  --color-on-primary-container: #c8d6f0;   /* was #8590a6 — too low contrast */
+
+  --color-secondary: #9d4300;
+  --color-secondary-container: #fd761a;
+  --color-on-secondary: #ffffff;
+  --color-on-secondary-container: #3b1800;  /* dark text on orange container */
+
+  /* ─── Surface Scale ─── */
+  --color-surface: #fbf8fa;
+  --color-surface-dim: #dcd9db;
+  --color-surface-bright: #fbf8fa;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #f5f3f4;
+  --color-surface-container: #f0edef;
+  --color-surface-container-high: #eae7e9;
+  --color-surface-container-highest: #e4e2e3;
+  --color-surface-variant: #e4e2e3;
+
+  /* ─── Content Colors ─── */
+  --color-on-surface: #1b1b1d;
+  --color-on-surface-variant: #45474c;
+  --color-outline: #75777d;
+  --color-outline-variant: #c5c6cd;
+
+  /* ─── Error ─── */
+  --color-error: #ba1a1a;
+  --color-on-error: #ffffff;
+  --color-error-container: #ffdad6;
+  --color-on-error-container: #93000a;
+
+  /* ─── Spacing ─── */
+  --spacing-xs: 4px;
+  --spacing-sm: 12px;
+  --spacing-base: 8px;
+  --spacing-md: 24px;
+  --spacing-lg: 48px;
+  --spacing-gutter: 16px;
+  --spacing-margin-mobile: 16px;
+  --spacing-margin-desktop: 32px;
+
+  /* ─── Typography Families ─── */
+  --font-display-lg: "Inter", sans-serif;
+  --font-headline-lg: "Inter", sans-serif;
+  --font-title-md: "Inter", sans-serif;
+  --font-title-sm: "Inter", sans-serif;
+  --font-label-caps: "Inter", sans-serif;
+  --font-label-lg: "Inter", sans-serif;
+  --font-label-md: "Inter", sans-serif;
+  --font-label-sm: "Inter", sans-serif;
+  --font-body-base: "Inter", sans-serif;
+  --font-body-sm: "Inter", sans-serif;
+  --font-code-sm: "JetBrains Mono", monospace;
+  --font-code: "JetBrains Mono", monospace;
+
+  /* ─── Typography Sizes ─── */
+
+  /* Display */
+  --text-display-lg: 48px;
+  --text-display-lg--line-height: 56px;
+  --text-display-lg--letter-spacing: -0.02em;
+  --text-display-lg--font-weight: 800;
+
+  /* Headline */
+  --text-headline-lg: 32px;
+  --text-headline-lg--line-height: 40px;
+  --text-headline-lg--font-weight: 700;
+  --text-headline-lg-mobile: 24px;
+  --text-headline-lg-mobile--line-height: 32px;
+  --text-headline-lg-mobile--font-weight: 700;
+
+  /* Title */
+  --text-title-md: 18px;
+  --text-title-md--line-height: 24px;
+  --text-title-md--font-weight: 600;
+  --text-title-sm: 15px;
+  --text-title-sm--line-height: 20px;
+  --text-title-sm--font-weight: 600;
+
+  /* Label */
+  --text-label-caps: 12px;
+  --text-label-caps--line-height: 16px;
+  --text-label-caps--letter-spacing: 0.05em;
+  --text-label-caps--font-weight: 700;
+  --text-label-lg: 14px;
+  --text-label-lg--line-height: 20px;
+  --text-label-lg--font-weight: 600;
+  --text-label-md: 13px;
+  --text-label-md--line-height: 18px;
+  --text-label-md--font-weight: 500;
+  --text-label-sm: 11px;
+  --text-label-sm--line-height: 16px;
+  --text-label-sm--font-weight: 500;
+
+  /* Body */
+  --text-body-base: 16px;
+  --text-body-base--line-height: 24px;
+  --text-body-base--font-weight: 400;
+  --text-body-sm: 14px;
+  --text-body-sm--line-height: 20px;
+  --text-body-sm--font-weight: 400;
+
+  /* Code */
+  --text-code-sm: 13px;
+  --text-code-sm--line-height: 20px;
+  --text-code-sm--font-weight: 500;
+  --text-code: 14px;
+  --text-code--line-height: 22px;
+  --text-code--font-weight: 400;
+}
+
+@layer base {
+  body {
+    @apply bg-surface text-on-surface font-body-base antialiased;
+  }
+}
+
+/* ─── Layout Helpers ─── */
+.mission-canvas {
+  background-color: #F8FAFC;
+  background-image: linear-gradient(to right, #E2E8F0 1px, transparent 1px),
+                    linear-gradient(to bottom, #E2E8F0 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+/* ─── Interactive Button Feel ─── */
+.tactile-btn {
+  border-bottom-width: 2px;
+  border-bottom-color: rgba(0, 0, 0, 0.2);
+  transition: all 0.1s;
+}
+.tactile-btn:active {
+  border-bottom-width: 0px;
+  transform: translateY(2px);
+  margin-bottom: 2px;
+}
+
+.tactile-card {
+  border: 1px solid #E2E8F0;
+}
+
+/* ─── Notch Accent ─── */
+.notch-left {
+  position: relative;
+}
+.notch-left::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 8px;
+  height: 16px;
+  background-color: #E2E8F0;
+  border-radius: 0 4px 4px 0;
+}
+
+/* ─── Custom Scrollbar ─── */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-surface-container-low;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-outline-variant rounded-full;
+}
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-outline;
+}
+
+/* ─── Fix Blockly Ghost Scrollbar ─── */
+.blocklyFlyout[style*="display: none"] ~ .blocklyFlyoutScrollbar {
+  display: none !important;
+}
+
+/* ─── Slider Thumb Styling ─── */
+input[type='range'] {
+  accent-color: var(--color-secondary-container);
+}
