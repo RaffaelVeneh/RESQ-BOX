@@ -22,3 +22,15 @@ Catatan perjalanan pengembangan aplikasi web RESQ-BOX.
 - Menyelesaikan struktur *Routing* dengan `react-router-dom`.
 - Membuat *placeholder component* UI dasar untuk `Dashboard`, `Workspace`, `BlockEditor`, dan `Simulator`.
 - Struktur siap dilanjutkan ke eksekusi Phase 1 (Integrasi Blockly).
+
+---
+
+## [2026-05-18] Redesign Mission Panel → Step-by-Step Guide
+- **MissionPanel.tsx** dirombak total dari tampilan info statis menjadi **stepper UI bertahap**.
+  - Tiap misi kini punya 5 langkah: *Kenali Misi → Ambil Komponen → Sambungkan Kabel → Tulis Kode → Jalankan & Validasi*.
+  - Setiap langkah punya: judul, deskripsi ramah anak, ikon warna-warni, dan tips opsional.
+  - Navigasi Prev/Next dengan progress bar visual (dot indicator + bar indicator di header).
+  - Tombol **VALIDASI MISI** hanya muncul di langkah terakhir — memaksa anak mengikuti urutan.
+  - Tip box kuning muncul otomatis kalau langkah ada tips.
+- **missions.ts** diupdate: interface `Mission` ditambah field `steps: MissionStep[]`, dan data tiap misi (level 1–5) sudah dilengkapi langkah bertahap yang ditulis dalam bahasa ramah anak-anak.
+- Desain mengikuti color system yang sudah ada (primary, secondary-container, surface tokens Tailwind).
