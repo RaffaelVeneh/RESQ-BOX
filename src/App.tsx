@@ -1,16 +1,33 @@
+import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Dashboard from './app/Dashboard';
-import Workspace from './app/Workspace';
-import Mitigation from './app/Mitigation';
+
+const Workspace = lazy(() => import('./app/Workspace'));
+const Mitigation = lazy(() => import('./app/Mitigation'));
+
+function Loading() {
+  return (
+    <div className="fixed inset-0 flex items-center justify-center bg-surface">
+      <div className="flex flex-col items-center gap-3">
+        <span className="material-symbols-outlined text-4xl text-primary animate-spin">
+          progress_activity
+        </span>
+        <p className="font-label-md text-on-surface-variant">Memuat...</p>
+      </div>
+    </div>
+  );
+}
 
 function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/workspace" element={<Workspace />} />
-        <Route path="/mitigation" element={<Mitigation />} />
-      </Routes>
+      <Suspense fallback={<Loading />}>
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/workspace" element={<Workspace />} />
+          <Route path="/mitigation" element={<Mitigation />} />
+        </Routes>
+      </Suspense>
     </BrowserRouter>
   );
 }

@@ -66,8 +66,6 @@ export default function SensorPanel() {
         {/* Analog sensors with sliders */}
         {SENSORS.map((sensor) => {
           const rawVal = sensorValues[sensor.pin] as number;
-          const displayVal = sensor.pin === 'A2' ? tempCelsius : rawVal;
-          const displayUnit = sensor.pin === 'A2' ? '°C' : '';
 
           return (
             <div key={sensor.pin}>

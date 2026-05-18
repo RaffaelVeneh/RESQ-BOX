@@ -9,15 +9,15 @@ export default function PWABadge() {
     offlineReady: [offlineReady, setOfflineReady],
     updateServiceWorker,
   } = useRegisterSW({
-    onRegisteredSW(swUrl, r) {
+    onRegisteredSW(_swUrl, r) {
       if (period <= 0) return;
       if (r?.active?.state === 'activated') {
-        setInterval(() => r.update(), period);
+        setInterval(() => r!.update(), period);
       } else if (r?.installing) {
-        r.installing.addEventListener('statechange', (e) => {
+        r.installing.addEventListener('statechange', (e: Event) => {
           const sw = e.target as ServiceWorker;
           if (sw.state === 'activated') {
-            setInterval(() => r.update(), period);
+            setInterval(() => r!.update(), period);
           }
         });
       }
