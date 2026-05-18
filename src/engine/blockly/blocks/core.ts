@@ -1,456 +1,494 @@
 import * as Blockly from 'blockly/core';
 import { arduinoGenerator } from '../arduinoGenerator';
 
+// LED color → pin mapping (hidden from user)
+const LED_PIN: Record<string, string> = {
+  Merah: '10', Hijau: '11', Biru: '12', Bawaan: 'LED_BUILTIN',
+};
 
 export function defineCoreBlocks() {
 
-  // ══════════════════════════════════════════════
-  // 1. Arduino Setup & Loop
-  // ══════════════════════════════════════════════
-  Blockly.Blocks['arduino_setup_loop'] = {
-    init: function () {
-      this.appendDummyInput().appendField('Arduino Program');
-      this.appendStatementInput('SETUP').setCheck(null).appendField('Setup (Run Once)');
-      this.appendStatementInput('LOOP').setCheck(null).appendField('Loop (Run Forever)');
+  // ── 1. Program Utama ─────────────────────────────────────────
+  Blockly.Blocks['resq_program'] = {
+    init() {
+      this.appendDummyInput().appendField('Program RESQ-BOX');
+      this.appendStatementInput('SETUP').setCheck(null).appendField('Jalan Sekali');
+      this.appendStatementInput('LOOP').setCheck(null).appendField('Berulang');
       this.setColour('#fd761a');
-      this.setTooltip('Entry point. Put pinMode in Setup, actions in Loop.');
       this.setPreviousStatement(false);
       this.setNextStatement(false);
+      this.setTooltip('"Jalan Sekali" dijalankan saat program mulai. "Berulang" diulang terus-menerus.');
     },
   };
-  arduinoGenerator.forBlock['arduino_setup_loop'] = function (block: Blockly.Block) {
+  arduinoGenerator.forBlock['resq_program'] = function (block: Blockly.Block) {
     const setup = arduinoGenerator.statementToCode(block, 'SETUP') || '';
     const loop = arduinoGenerator.statementToCode(block, 'LOOP') || '';
     return `#include <Arduino.h>\n\nvoid setup() {\n  Serial.begin(9600);\n${setup}}\n\nvoid loop() {\n${loop}}\n`;
   };
 
-  // ══════════════════════════════════════════════
-  // 2. Pin Mode
-  // ══════════════════════════════════════════════
-  Blockly.Blocks['arduino_pin_mode'] = {
-    init: function () {
-      this.appendDummyInput()
-        .appendField('Set Pin')
-        .appendField(new Blockly.FieldDropdown([
-          ['LED (13)', 'LED_BUILTIN'],['5 (Buzzer)', '5'],['6 (Motor)', '6'],
-          ['9 (Servo)', '9'],['10', '10'],['11', '11'],['12', '12'],
-          ['2 (Tombol)', '2'],['3 (Tombol)', '3'],
-        ]), 'PIN')
-        .appendField('as')
-        .appendField(new Blockly.FieldDropdown([
-          ['OUTPUT', 'OUTPUT'],['INPUT', 'INPUT'],['INPUT_PULLUP', 'INPUT_PULLUP'],
-        ]), 'MODE');
-      this.setPreviousStatement(true, null);
-      this.setNextStatement(true, null);
-      this.setColour('#fd761a');
-      this.setTooltip('Configure pin direction. Place in Setup.');
-    },
-  };
-  arduinoGenerator.forBlock['arduino_pin_mode'] = function (block: Blockly.Block) {
-    return `pinMode(${block.getFieldValue('PIN')}, ${block.getFieldValue('MODE')});\n`;
-  };
-
-  // ══════════════════════════════════════════════
-  // 3. LED with Color — "Set LED [COLOR] pin [X] to [ON/OFF]"
-  // ══════════════════════════════════════════════
-  Blockly.Blocks['arduino_led_write'] = {
-    init: function () {
+  // ── 2. LED ───────────────────────────────────────────────────
+  Blockly.Blocks['resq_led'] = {
+    init() {
       this.appendDummyInput()
         .appendField('LED')
         .appendField(new Blockly.FieldDropdown([
-          ['🔴 Merah', 'Merah'],['🟢 Hijau', 'Hijau'],['🔵 Biru', 'Biru'],
-          ['🟡 Kuning', 'Kuning'],['⚪ Putih', 'Putih'],['🟠 Oranye', 'Oranye'],
+          ['Merah', 'Merah'], ['Hijau', 'Hijau'], ['Biru', 'Biru'], ['Bawaan', 'Bawaan'],
         ]), 'COLOR')
-        .appendField('pin')
         .appendField(new Blockly.FieldDropdown([
-          ['LED (13)', 'LED_BUILTIN'],['10', '10'],['11', '11'],['12', '12'],
-        ]), 'PIN')
-        .appendField(new Blockly.FieldDropdown([
-          ['NYALA', 'HIGH'],['MATI', 'LOW'],
+          ['Nyala', 'HIGH'], ['Mati', 'LOW'],
         ]), 'STATE');
       this.setPreviousStatement(true, null);
       this.setNextStatement(true, null);
       this.setColour('#0D9488');
-      this.setTooltip('Turn an LED on or off with a color label.');
     },
   };
-  arduinoGenerator.forBlock['arduino_led_write'] = function (block: Blockly.Block) {
-    const pin = block.getFieldValue('PIN');
-    const state = block.getFieldValue('STATE');
+  arduinoGenerator.forBlock['resq_led'] = function (block: Blockly.Block) {
     const color = block.getFieldValue('COLOR');
-    return `// LED ${color}\npinMode(${pin}, OUTPUT);\ndigitalWrite(${pin}, ${state});\n`;
+    const pin = LED_PIN[color] || '13';
+    const state = block.getFieldValue('STATE');
+    return `pinMode(${pin}, OUTPUT);\ndigitalWrite(${pin}, ${state}); // LED ${color}\n`;
   };
 
-  // ══════════════════════════════════════════════
-  // 4. Digital Write (generic)
-  // ══════════════════════════════════════════════
-  Blockly.Blocks['arduino_digital_write'] = {
-    init: function () {
+  // ── 3. Buzzer Berbunyi ───────────────────────────────────────
+  Blockly.Blocks['resq_buzzer'] = {
+    init() {
       this.appendDummyInput()
-        .appendField('Set Pin')
-        .appendField(new Blockly.FieldDropdown([
-          ['LED (13)', 'LED_BUILTIN'],['10', '10'],['11', '11'],['12', '12'],
-        ]), 'PIN')
-        .appendField('to')
-        .appendField(new Blockly.FieldDropdown([
-          ['HIGH (ON)', 'HIGH'],['LOW (OFF)', 'LOW'],
-        ]), 'STATE');
-      this.setPreviousStatement(true, null);
-      this.setNextStatement(true, null);
-      this.setColour('#0D9488');
-    },
-  };
-  arduinoGenerator.forBlock['arduino_digital_write'] = function (block: Blockly.Block) {
-    return `digitalWrite(${block.getFieldValue('PIN')}, ${block.getFieldValue('STATE')});\n`;
-  };
-
-  // ══════════════════════════════════════════════
-  // 5. Buzzer — tone() with duration
-  // ══════════════════════════════════════════════
-  Blockly.Blocks['arduino_buzzer'] = {
-    init: function () {
-      this.appendDummyInput()
-        .appendField('Buzzer pin')
-        .appendField(new Blockly.FieldDropdown([
-          ['5', '5'],['6', '6'],['8', '8'],['9', '9'],
-        ]), 'PIN')
-        .appendField('berbunyi')
-        .appendField(new Blockly.FieldNumber(1000, 0), 'MS')
+        .appendField('Buzzer berbunyi')
+        .appendField(new Blockly.FieldNumber(1000, 100), 'MS')
         .appendField('ms');
       this.setPreviousStatement(true, null);
       this.setNextStatement(true, null);
       this.setColour('#0D9488');
-      this.setTooltip('Play a tone on the buzzer for the given duration.');
     },
   };
-  arduinoGenerator.forBlock['arduino_buzzer'] = function (block: Blockly.Block) {
-    const pin = block.getFieldValue('PIN');
+  arduinoGenerator.forBlock['resq_buzzer'] = function (block: Blockly.Block) {
     const ms = block.getFieldValue('MS');
-    return `tone(${pin}, 1000, ${ms});\ndelay(${ms});\n`;
+    return `tone(5, 1000, ${ms});\ndelay(${ms});\n`;
   };
 
-  // ══════════════════════════════════════════════
-  // 6. Buzzer Stop — noTone()
-  // ══════════════════════════════════════════════
-  Blockly.Blocks['arduino_buzzer_stop'] = {
-    init: function () {
-      this.appendDummyInput()
-        .appendField('Buzzer pin')
-        .appendField(new Blockly.FieldDropdown([
-          ['5', '5'],['6', '6'],['8', '8'],['9', '9'],
-        ]), 'PIN')
-        .appendField('berhenti');
+  // ── 4. Buzzer Berhenti ──────────────────────────────────────
+  Blockly.Blocks['resq_buzzer_stop'] = {
+    init() {
+      this.appendDummyInput().appendField('Buzzer berhenti');
       this.setPreviousStatement(true, null);
       this.setNextStatement(true, null);
       this.setColour('#0D9488');
     },
   };
-  arduinoGenerator.forBlock['arduino_buzzer_stop'] = function (block: Blockly.Block) {
-    return `noTone(${block.getFieldValue('PIN')});\n`;
+  arduinoGenerator.forBlock['resq_buzzer_stop'] = function () {
+    return `noTone(5);\n`;
   };
 
-  // ══════════════════════════════════════════════
-  // 7. DC Motor Speed — analogWrite(pin, speed)
-  // ══════════════════════════════════════════════
-  Blockly.Blocks['arduino_motor_speed'] = {
-    init: function () {
+  // ── 5. Motor ─────────────────────────────────────────────────
+  Blockly.Blocks['resq_motor'] = {
+    init() {
       this.appendDummyInput()
-        .appendField('Motor pin')
+        .appendField('Motor')
         .appendField(new Blockly.FieldDropdown([
-          ['6', '6'],['9', '9'],['10', '10'],['11', '11'],
-        ]), 'PIN')
-        .appendField('kecepatan')
-        .appendField(new Blockly.FieldNumber(200, 0, 255), 'SPEED')
-        .appendField('(0-255)');
+          ['Berhenti', '0'], ['Pelan', '85'], ['Sedang', '170'], ['Cepat', '255'],
+        ]), 'SPEED');
       this.setPreviousStatement(true, null);
       this.setNextStatement(true, null);
       this.setColour('#7C3AED');
-      this.setTooltip('Control a DC motor speed (0=stop, 255=full speed).');
     },
   };
-  arduinoGenerator.forBlock['arduino_motor_speed'] = function (block: Blockly.Block) {
-    const pin = block.getFieldValue('PIN');
-    const speed = block.getFieldValue('SPEED');
-    return `analogWrite(${pin}, ${speed});\n`;
+  arduinoGenerator.forBlock['resq_motor'] = function (block: Blockly.Block) {
+    return `analogWrite(6, ${block.getFieldValue('SPEED')});\n`;
   };
 
-  // ══════════════════════════════════════════════
-  // 8. Servo Motor — servo.write(angle)
-  // ══════════════════════════════════════════════
-  Blockly.Blocks['arduino_servo'] = {
-    init: function () {
+  // ── 6. Servo / Pintu ─────────────────────────────────────────
+  Blockly.Blocks['resq_servo'] = {
+    init() {
       this.appendDummyInput()
-        .appendField('Servo pin')
+        .appendField('Pintu')
         .appendField(new Blockly.FieldDropdown([
-          ['9', '9'],['10', '10'],['11', '11'],
-        ]), 'PIN')
-        .appendField('sudut')
-        .appendField(new Blockly.FieldNumber(90, 0, 180), 'ANGLE')
-        .appendField('°');
+          ['Tutup', '0'], ['Setengah', '90'], ['Buka', '180'],
+        ]), 'POS');
       this.setPreviousStatement(true, null);
       this.setNextStatement(true, null);
       this.setColour('#7C3AED');
-      this.setTooltip('Rotate a servo to a specific angle (0-180 degrees).');
     },
   };
-  arduinoGenerator.forBlock['arduino_servo'] = function (block: Blockly.Block) {
-    const pin = block.getFieldValue('PIN');
-    const angle = block.getFieldValue('ANGLE');
-    (arduinoGenerator as any)._servoInclude = true;
-    (arduinoGenerator as any)._servoPins = (arduinoGenerator as any)._servoPins || new Set();
-    (arduinoGenerator as any)._servoPins.add(pin);
-    return `servo_${pin}.write(${angle});\n`;
+  arduinoGenerator.forBlock['resq_servo'] = function (block: Blockly.Block) {
+    return `// Servo (pin 9)\nservo_9.write(${block.getFieldValue('POS')});\n`;
   };
 
-  // ══════════════════════════════════════════════
-  // 9. Delay
-  // ══════════════════════════════════════════════
-  Blockly.Blocks['arduino_delay'] = {
-    init: function () {
+  // ── 7. Tunggu ────────────────────────────────────────────────
+  Blockly.Blocks['resq_tunggu'] = {
+    init() {
       this.appendDummyInput()
-        .appendField('Delay')
+        .appendField('Tunggu')
         .appendField(new Blockly.FieldNumber(1000, 0), 'MS')
         .appendField('ms');
       this.setPreviousStatement(true, null);
       this.setNextStatement(true, null);
-      this.setColour('#0D9488');
+      this.setColour('#fd761a');
     },
   };
-  arduinoGenerator.forBlock['arduino_delay'] = function (block: Blockly.Block) {
+  arduinoGenerator.forBlock['resq_tunggu'] = function (block: Blockly.Block) {
     return `delay(${block.getFieldValue('MS')});\n`;
   };
 
-  // ══════════════════════════════════════════════
-  // 10. Serial Print — log output to console
-  // ══════════════════════════════════════════════
-  Blockly.Blocks['arduino_serial_print'] = {
-    init: function () {
-      this.appendValueInput('VALUE')
-        .setCheck(null)
-        .appendField('Tampilkan');
-      this.appendDummyInput().appendField('di Serial Monitor');
+  // ── 8. Tampilkan ─────────────────────────────────────────────
+  Blockly.Blocks['resq_tampil'] = {
+    init() {
+      this.appendValueInput('VALUE').setCheck(null).appendField('Tampilkan');
       this.setInputsInline(true);
       this.setPreviousStatement(true, null);
       this.setNextStatement(true, null);
       this.setColour('#fd761a');
-      this.setTooltip('Print a value to the Serial Monitor / console output.');
     },
   };
-  arduinoGenerator.forBlock['arduino_serial_print'] = function (block: Blockly.Block) {
+  arduinoGenerator.forBlock['resq_tampil'] = function (block: Blockly.Block) {
     const val = arduinoGenerator.valueToCode(block, 'VALUE', 0) || '""';
     return `Serial.println(${val});\n`;
   };
 
-  // ══════════════════════════════════════════════
-  // 11. Digital Read (button)
-  // ══════════════════════════════════════════════
-  Blockly.Blocks['arduino_digital_read'] = {
-    init: function () {
-      this.appendDummyInput()
-        .appendField('Tombol pin')
-        .appendField(new Blockly.FieldDropdown([
-          ['2', '2'],['3', '3'],
-        ]), 'PIN')
-        .appendField('ditekan?');
+  // ── 9. Sensor Air ────────────────────────────────────────────
+  Blockly.Blocks['resq_sensor_air'] = {
+    init() {
+      this.appendDummyInput().appendField('💧 Nilai Sensor Air');
+      this.setOutput(true, 'Number');
+      this.setColour('#2563EB');
+      this.setTooltip('Nilai 0-1023. Semakin tinggi = air semakin banyak.');
+    },
+  };
+  arduinoGenerator.forBlock['resq_sensor_air'] = function () {
+    return [`analogRead(A0)`, 0];
+  };
+
+  // ── 10. Sensor Getaran ───────────────────────────────────────
+  Blockly.Blocks['resq_sensor_getar'] = {
+    init() {
+      this.appendDummyInput().appendField('🔔 Nilai Sensor Getaran');
+      this.setOutput(true, 'Number');
+      this.setColour('#2563EB');
+      this.setTooltip('Nilai 0-1023. Semakin tinggi = getaran semakin kuat.');
+    },
+  };
+  arduinoGenerator.forBlock['resq_sensor_getar'] = function () {
+    return [`analogRead(A1)`, 0];
+  };
+
+  // ── 11. Sensor Suhu ──────────────────────────────────────────
+  Blockly.Blocks['resq_sensor_suhu'] = {
+    init() {
+      this.appendDummyInput().appendField('🌡️ Nilai Suhu (°C)');
+      this.setOutput(true, 'Number');
+      this.setColour('#2563EB');
+    },
+  };
+  arduinoGenerator.forBlock['resq_sensor_suhu'] = function () {
+    return [`(analogRead(A2) * 0.4887)`, 0];
+  };
+
+  // ── 12. Tombol 1 ─────────────────────────────────────────────
+  Blockly.Blocks['resq_tombol_1'] = {
+    init() {
+      this.appendDummyInput().appendField('🔘 Tombol 1 ditekan?');
       this.setOutput(true, 'Boolean');
       this.setColour('#2563EB');
     },
   };
-  arduinoGenerator.forBlock['arduino_digital_read'] = function (block: Blockly.Block) {
-    return [`digitalRead(${block.getFieldValue('PIN')}) == HIGH`, 0];
+  arduinoGenerator.forBlock['resq_tombol_1'] = function () {
+    return [`digitalRead(2) == HIGH`, 0];
   };
 
-  // ══════════════════════════════════════════════
-  // 12. Analog Read (generic)
-  // ══════════════════════════════════════════════
-  Blockly.Blocks['arduino_analog_read'] = {
-    init: function () {
-      this.appendDummyInput()
-        .appendField('Baca Pin Analog')
-        .appendField(new Blockly.FieldDropdown([
-          ['A0 (Sensor Air)', 'A0'],['A1 (Sensor Getar)', 'A1'],['A2 (Suhu)', 'A2'],
-        ]), 'PIN');
-      this.setOutput(true, 'Number');
+  // ── 13. Tombol 2 ─────────────────────────────────────────────
+  Blockly.Blocks['resq_tombol_2'] = {
+    init() {
+      this.appendDummyInput().appendField('🔘 Tombol 2 ditekan?');
+      this.setOutput(true, 'Boolean');
       this.setColour('#2563EB');
     },
   };
-  arduinoGenerator.forBlock['arduino_analog_read'] = function (block: Blockly.Block) {
-    return [`analogRead(${block.getFieldValue('PIN')})`, 0];
+  arduinoGenerator.forBlock['resq_tombol_2'] = function () {
+    return [`digitalRead(3) == HIGH`, 0];
   };
 
-  // ══════════════════════════════════════════════
-  // 13. Vibration Sensor — named shortcut for A1
-  // ══════════════════════════════════════════════
-  Blockly.Blocks['arduino_vibration_read'] = {
-    init: function () {
-      this.appendDummyInput().appendField('🔔 Baca Sensor Getaran (A1)');
-      this.setOutput(true, 'Number');
-      this.setColour('#2563EB');
-      this.setTooltip('Returns vibration value 0-1023. High = strong vibration.');
-    },
-  };
-  arduinoGenerator.forBlock['arduino_vibration_read'] = function () {
-    return [`analogRead(A1)`, 0];
-  };
-
-  // ══════════════════════════════════════════════
-  // 14. Water Level Sensor — named shortcut for A0
-  // ══════════════════════════════════════════════
-  Blockly.Blocks['arduino_water_read'] = {
-    init: function () {
-      this.appendDummyInput().appendField('💧 Baca Sensor Air (A0)');
-      this.setOutput(true, 'Number');
-      this.setColour('#2563EB');
-      this.setTooltip('Returns water level 0-1023. High = more water detected.');
-    },
-  };
-  arduinoGenerator.forBlock['arduino_water_read'] = function () {
-    return [`analogRead(A0)`, 0];
-  };
-
-  // ══════════════════════════════════════════════
-  // 15. Temperature Sensor — named shortcut for A2
-  // ══════════════════════════════════════════════
-  Blockly.Blocks['arduino_temp_read'] = {
-    init: function () {
-      this.appendDummyInput().appendField('🌡️ Baca Sensor Suhu (A2)');
-      this.setOutput(true, 'Number');
-      this.setColour('#2563EB');
-      this.setTooltip('Returns temperature in Celsius (approx from LM35).');
-    },
-  };
-  arduinoGenerator.forBlock['arduino_temp_read'] = function () {
-    return [`(analogRead(A2) * 0.4887)`, 0]; // LM35: (val/1023)*500
-  };
-
-  // ══════════════════════════════════════════════
-  // 16. LED Builtin shortcut (backward compat)
-  // ══════════════════════════════════════════════
-  Blockly.Blocks['led_builtin_set'] = {
-    init: function () {
-      this.appendDummyInput()
-        .appendField('LED Bawaan (pin 13)')
-        .appendField(new Blockly.FieldDropdown([
-          ['NYALA', 'HIGH'],['MATI', 'LOW'],
-        ]), 'STATE');
+  // ── 14. Jika...Maka ──────────────────────────────────────────
+  Blockly.Blocks['resq_jika'] = {
+    init() {
+      this.appendValueInput('KONDISI').setCheck(null).appendField('Jika');
+      this.appendStatementInput('MAKA').setCheck(null).appendField('Maka');
       this.setPreviousStatement(true, null);
       this.setNextStatement(true, null);
-      this.setColour('#0D9488');
+      this.setColour('#DB2777');
+      this.setTooltip('Lakukan sesuatu HANYA JIKA kondisi terpenuhi.');
     },
   };
-  arduinoGenerator.forBlock['led_builtin_set'] = function (block: Blockly.Block) {
-    return `pinMode(LED_BUILTIN, OUTPUT);\ndigitalWrite(LED_BUILTIN, ${block.getFieldValue('STATE')});\n`;
+  arduinoGenerator.forBlock['resq_jika'] = function (block: Blockly.Block) {
+    const cond = arduinoGenerator.valueToCode(block, 'KONDISI', 0) || 'false';
+    const maka = arduinoGenerator.statementToCode(block, 'MAKA') || '';
+    return `if (${cond}) {\n${maka}}\n`;
   };
 
-  // ══════════════════════════════════════════════
-  // 17. Text String (for serial print input)
-  // ══════════════════════════════════════════════
-  Blockly.Blocks['arduino_text'] = {
-    init: function () {
-      this.appendDummyInput()
-        .appendField('"')
-        .appendField(new Blockly.FieldTextInput('teks'), 'TEXT')
-        .appendField('"');
-      this.setOutput(true, 'String');
-      this.setColour('#64748B');
+  // ── 15. Jika...Maka...Kalau Tidak ────────────────────────────
+  Blockly.Blocks['resq_jika_tidak'] = {
+    init() {
+      this.appendValueInput('KONDISI').setCheck(null).appendField('Jika');
+      this.appendStatementInput('MAKA').setCheck(null).appendField('Maka');
+      this.appendStatementInput('TIDAK').setCheck(null).appendField('Kalau Tidak');
+      this.setPreviousStatement(true, null);
+      this.setNextStatement(true, null);
+      this.setColour('#DB2777');
+      this.setTooltip('Pilih satu dari dua kemungkinan tindakan.');
     },
   };
-  arduinoGenerator.forBlock['arduino_text'] = function (block: Blockly.Block) {
-    return [`"${block.getFieldValue('TEXT')}"`, 0];
+  arduinoGenerator.forBlock['resq_jika_tidak'] = function (block: Blockly.Block) {
+    const cond = arduinoGenerator.valueToCode(block, 'KONDISI', 0) || 'false';
+    const maka = arduinoGenerator.statementToCode(block, 'MAKA') || '';
+    const tidak = arduinoGenerator.statementToCode(block, 'TIDAK') || '';
+    return `if (${cond}) {\n${maka}} else {\n${tidak}}\n`;
   };
 
-  // ══════════════════════════════════════════════
-  // Built-in Blockly block generators for Arduino C
-  // These are needed so arduinoGenerator doesn't crash when
-  // logic/math blocks are used alongside our custom blocks.
-  // ══════════════════════════════════════════════
-
-  // controls_if → if (...) { ... } [else if] [else]
-  arduinoGenerator.forBlock['controls_if'] = function (block: Blockly.Block) {
-    let n = 0;
-    let code = '';
-    while (block.getInput('IF' + n)) {
-      const cond = arduinoGenerator.valueToCode(block, 'IF' + n, 0) || 'false';
-      const branch = arduinoGenerator.statementToCode(block, 'DO' + n) || '';
-      code += (n === 0 ? 'if' : ' else if') + ` (${cond}) {\n${branch}}`;
-      n++;
-    }
-    if (block.getInput('ELSE')) {
-      const elseBranch = arduinoGenerator.statementToCode(block, 'ELSE') || '';
-      code += ` else {\n${elseBranch}}`;
-    }
-    return code + '\n';
+  // ── 16. Perbandingan ─────────────────────────────────────────
+  Blockly.Blocks['resq_bandingkan'] = {
+    init() {
+      this.appendValueInput('A').setCheck('Number');
+      this.appendDummyInput().appendField(new Blockly.FieldDropdown([
+        ['lebih dari', '>'], ['kurang dari', '<'],
+        ['sama dengan', '=='], ['tidak sama dengan', '!='],
+        ['lebih dari atau sama', '>='], ['kurang dari atau sama', '<='],
+      ]), 'OP');
+      this.appendValueInput('B').setCheck('Number');
+      this.setInputsInline(true);
+      this.setOutput(true, 'Boolean');
+      this.setColour('#DB2777');
+    },
   };
-
-  // logic_compare → a == b, a > b, a < b, etc.
-  arduinoGenerator.forBlock['logic_compare'] = function (block: Blockly.Block) {
-    const opMap: Record<string, string> = {
-      EQ: '==', NEQ: '!=', LT: '<', LTE: '<=', GT: '>', GTE: '>=',
-    };
-    const op = opMap[block.getFieldValue('OP')] || '==';
+  arduinoGenerator.forBlock['resq_bandingkan'] = function (block: Blockly.Block) {
+    const op = block.getFieldValue('OP');
     const a = arduinoGenerator.valueToCode(block, 'A', 0) || '0';
     const b = arduinoGenerator.valueToCode(block, 'B', 0) || '0';
     return [`${a} ${op} ${b}`, 0];
   };
 
-  // logic_operation → a && b, a || b
-  arduinoGenerator.forBlock['logic_operation'] = function (block: Blockly.Block) {
+  // ── 17. DAN / ATAU ───────────────────────────────────────────
+  Blockly.Blocks['resq_dan_atau'] = {
+    init() {
+      this.appendValueInput('A').setCheck('Boolean');
+      this.appendDummyInput().appendField(new Blockly.FieldDropdown([
+        ['DAN', 'AND'], ['ATAU', 'OR'],
+      ]), 'OP');
+      this.appendValueInput('B').setCheck('Boolean');
+      this.setInputsInline(true);
+      this.setOutput(true, 'Boolean');
+      this.setColour('#DB2777');
+    },
+  };
+  arduinoGenerator.forBlock['resq_dan_atau'] = function (block: Blockly.Block) {
     const op = block.getFieldValue('OP') === 'AND' ? '&&' : '||';
     const a = arduinoGenerator.valueToCode(block, 'A', 0) || 'false';
     const b = arduinoGenerator.valueToCode(block, 'B', 0) || 'false';
     return [`${a} ${op} ${b}`, 0];
   };
 
-  // logic_negate → !a
-  arduinoGenerator.forBlock['logic_negate'] = function (block: Blockly.Block) {
-    const val = arduinoGenerator.valueToCode(block, 'BOOL', 0) || 'false';
-    return [`!${val}`, 0];
-  };
-
-  // logic_boolean → true / false
-  arduinoGenerator.forBlock['logic_boolean'] = function (block: Blockly.Block) {
-    return [block.getFieldValue('BOOL') === 'TRUE' ? 'true' : 'false', 0];
-  };
-
-  // math_number → raw number
+  // ── 18. Angka ────────────────────────────────────────────────
   arduinoGenerator.forBlock['math_number'] = function (block: Blockly.Block) {
     return [String(block.getFieldValue('NUM') || '0'), 0];
   };
 
-  // math_arithmetic → a + b, a - b, etc.
-  arduinoGenerator.forBlock['math_arithmetic'] = function (block: Blockly.Block) {
-    const opMap: Record<string, string> = {
-      ADD: '+', MINUS: '-', MULTIPLY: '*', DIVIDE: '/', POWER: '',
-    };
-    const op = block.getFieldValue('OP');
-    const a = arduinoGenerator.valueToCode(block, 'A', 0) || '0';
-    const b = arduinoGenerator.valueToCode(block, 'B', 0) || '0';
-    if (op === 'POWER') return [`pow(${a}, ${b})`, 0];
-    return [`${a} ${opMap[op] || '+'} ${b}`, 0];
+  // ── 19. Teks ─────────────────────────────────────────────────
+  Blockly.Blocks['resq_teks'] = {
+    init() {
+      this.appendDummyInput()
+        .appendField('"')
+        .appendField(new Blockly.FieldTextInput('halo'), 'TEXT')
+        .appendField('"');
+      this.setOutput(true, 'String');
+      this.setColour('#64748B');
+    },
   };
-
-  // text (built-in) → "string"
-  arduinoGenerator.forBlock['text'] = function (block: Blockly.Block) {
+  arduinoGenerator.forBlock['resq_teks'] = function (block: Blockly.Block) {
     return [`"${block.getFieldValue('TEXT')}"`, 0];
   };
 
-  // controls_whileUntil → while (...) { }
-  arduinoGenerator.forBlock['controls_whileUntil'] = function (block: Blockly.Block) {
-    const until = block.getFieldValue('MODE') === 'UNTIL';
-    let cond = arduinoGenerator.valueToCode(block, 'BOOL', 0) || 'false';
-    if (until) cond = `!(${cond})`;
-    const branch = arduinoGenerator.statementToCode(block, 'DO') || '';
-    return `while (${cond}) {\n${branch}}\n`;
+  // ── 20. Ulangi N Kali ────────────────────────────────────────
+  Blockly.Blocks['resq_ulangi'] = {
+    init() {
+      this.appendDummyInput()
+        .appendField('Ulangi')
+        .appendField(new Blockly.FieldNumber(3, 1, 100), 'KALI')
+        .appendField('kali');
+      this.appendStatementInput('DO').setCheck(null);
+      this.setPreviousStatement(true, null);
+      this.setNextStatement(true, null);
+      this.setColour('#fd761a');
+      this.setTooltip('Lakukan sesuatu beberapa kali berulang.');
+    },
+  };
+  arduinoGenerator.forBlock['resq_ulangi'] = function (block: Blockly.Block) {
+    const n = block.getFieldValue('KALI');
+    const body = arduinoGenerator.statementToCode(block, 'DO') || '';
+    return `for (int _i = 0; _i < ${n}; _i++) {\n${body}}\n`;
   };
 
-  // controls_for → for (int i = from; i <= to; i += by)
-  arduinoGenerator.forBlock['controls_for'] = function (block: Blockly.Block) {
-    const varName = block.getFieldValue('VAR') || 'i';
-    const from = arduinoGenerator.valueToCode(block, 'FROM', 0) || '0';
-    const to = arduinoGenerator.valueToCode(block, 'TO', 0) || '10';
-    const by = arduinoGenerator.valueToCode(block, 'BY', 0) || '1';
-    const branch = arduinoGenerator.statementToCode(block, 'DO') || '';
-    return `for (int ${varName} = ${from}; ${varName} <= ${to}; ${varName} += ${by}) {\n${branch}}\n`;
+  // ── 21. Bukan (NOT) ──────────────────────────────────────────
+  Blockly.Blocks['resq_bukan'] = {
+    init() {
+      this.appendValueInput('KONDISI').setCheck('Boolean').appendField('Bukan');
+      this.setInputsInline(true);
+      this.setOutput(true, 'Boolean');
+      this.setColour('#DB2777');
+      this.setTooltip('Membalikkan kondisi: Bukan Benar = Salah, Bukan Salah = Benar.');
+    },
+  };
+  arduinoGenerator.forBlock['resq_bukan'] = function (block: Blockly.Block) {
+    const val = arduinoGenerator.valueToCode(block, 'KONDISI', 0) || 'false';
+    return [`!(${val})`, 0];
+  };
+
+  // ── 22. Hitung (Math) ────────────────────────────────────────
+  Blockly.Blocks['resq_hitung'] = {
+    init() {
+      this.appendValueInput('A').setCheck('Number');
+      this.appendDummyInput().appendField(new Blockly.FieldDropdown([
+        ['tambah (+)', '+'], ['kurang (-)', '-'],
+        ['kali (×)', '*'],  ['bagi (÷)', '/'],
+      ]), 'OP');
+      this.appendValueInput('B').setCheck('Number');
+      this.setInputsInline(true);
+      this.setOutput(true, 'Number');
+      this.setColour('#64748B');
+      this.setTooltip('Operasi matematika sederhana antara dua angka.');
+    },
+  };
+  arduinoGenerator.forBlock['resq_hitung'] = function (block: Blockly.Block) {
+    const op = block.getFieldValue('OP');
+    const a = arduinoGenerator.valueToCode(block, 'A', 0) || '0';
+    const b = arduinoGenerator.valueToCode(block, 'B', 0) || '0';
+    return [`(${a} ${op} ${b})`, 0];
+  };
+
+  // ── 23. Alarm Darurat ────────────────────────────────────────
+  Blockly.Blocks['resq_alarm_darurat'] = {
+    init() {
+      this.appendDummyInput()
+        .appendField('🚨 Alarm Darurat')
+        .appendField(new Blockly.FieldNumber(3, 1, 10), 'KALI')
+        .appendField('kali');
+      this.setPreviousStatement(true, null);
+      this.setNextStatement(true, null);
+      this.setColour('#EF4444');
+      this.setTooltip('LED merah berkedip + buzzer berbunyi beberapa kali sebagai tanda bahaya!');
+    },
+  };
+  arduinoGenerator.forBlock['resq_alarm_darurat'] = function (block: Blockly.Block) {
+    const n = block.getFieldValue('KALI');
+    return `// Alarm Darurat ${n}x\nfor (int _a = 0; _a < ${n}; _a++) {\n  digitalWrite(10, HIGH);\n  tone(5, 2000, 300);\n  delay(300);\n  digitalWrite(10, LOW);\n  noTone(5);\n  delay(200);\n}\n`;
+  };
+
+  // ── 24. LED Kedip ────────────────────────────────────────────
+  Blockly.Blocks['resq_led_kedip'] = {
+    init() {
+      this.appendDummyInput()
+        .appendField('LED')
+        .appendField(new Blockly.FieldDropdown([
+          ['Merah', 'Merah'], ['Hijau', 'Hijau'], ['Biru', 'Biru'], ['Bawaan', 'Bawaan'],
+        ]), 'COLOR')
+        .appendField('kedip')
+        .appendField(new Blockly.FieldNumber(3, 1, 20), 'KALI')
+        .appendField('kali');
+      this.setPreviousStatement(true, null);
+      this.setNextStatement(true, null);
+      this.setColour('#0D9488');
+      this.setTooltip('Membuat LED berkedip beberapa kali.');
+    },
+  };
+  arduinoGenerator.forBlock['resq_led_kedip'] = function (block: Blockly.Block) {
+    const color = block.getFieldValue('COLOR');
+    const pin = LED_PIN[color] || '13';
+    const n = block.getFieldValue('KALI');
+    return `// LED ${color} kedip ${n}x\npinMode(${pin}, OUTPUT);\nfor (int _k = 0; _k < ${n}; _k++) {\n  digitalWrite(${pin}, HIGH);\n  delay(400);\n  digitalWrite(${pin}, LOW);\n  delay(400);\n}\n`;
+  };
+
+  // ── 25. Matikan Semua LED ────────────────────────────────────
+  Blockly.Blocks['resq_semua_led_mati'] = {
+    init() {
+      this.appendDummyInput().appendField('💡 Matikan Semua LED');
+      this.setPreviousStatement(true, null);
+      this.setNextStatement(true, null);
+      this.setColour('#0D9488');
+    },
+  };
+  arduinoGenerator.forBlock['resq_semua_led_mati'] = function () {
+    return `digitalWrite(10, LOW); // Merah\ndigitalWrite(11, LOW); // Hijau\ndigitalWrite(12, LOW); // Biru\ndigitalWrite(LED_BUILTIN, LOW);\n`;
+  };
+
+  // ── 26. Buzzer Nada ──────────────────────────────────────────
+  Blockly.Blocks['resq_buzzer_nada'] = {
+    init() {
+      this.appendDummyInput()
+        .appendField('Buzzer nada')
+        .appendField(new Blockly.FieldDropdown([
+          ['Tinggi', '3000'], ['Sedang', '1500'], ['Rendah', '500'],
+        ]), 'FREQ')
+        .appendField('selama')
+        .appendField(new Blockly.FieldNumber(500, 100), 'MS')
+        .appendField('ms');
+      this.setPreviousStatement(true, null);
+      this.setNextStatement(true, null);
+      this.setColour('#0D9488');
+      this.setTooltip('Mainkan nada dengan pitch tertentu.');
+    },
+  };
+  arduinoGenerator.forBlock['resq_buzzer_nada'] = function (block: Blockly.Block) {
+    const freq = block.getFieldValue('FREQ');
+    const ms = block.getFieldValue('MS');
+    return `tone(5, ${freq}, ${ms});\ndelay(${ms});\n`;
+  };
+
+  // ── 27. Air Bahaya? ──────────────────────────────────────────
+  Blockly.Blocks['resq_air_bahaya'] = {
+    init() {
+      this.appendDummyInput().appendField('💧 Air berbahaya?');
+      this.setOutput(true, 'Boolean');
+      this.setColour('#2563EB');
+      this.setTooltip('Benar jika sensor air menunjukkan level BERBAHAYA (>800/1023).');
+    },
+  };
+  arduinoGenerator.forBlock['resq_air_bahaya'] = function () {
+    return [`analogRead(A0) > 800`, 0];
+  };
+
+  // ── 28. Air Waspada? ─────────────────────────────────────────
+  Blockly.Blocks['resq_air_waspada'] = {
+    init() {
+      this.appendDummyInput().appendField('💧 Air perlu waspada?');
+      this.setOutput(true, 'Boolean');
+      this.setColour('#2563EB');
+      this.setTooltip('Benar jika sensor air menunjukkan level WASPADA (>400/1023).');
+    },
+  };
+  arduinoGenerator.forBlock['resq_air_waspada'] = function () {
+    return [`analogRead(A0) > 400`, 0];
+  };
+
+  // ── 29. Getaran Kuat? ────────────────────────────────────────
+  Blockly.Blocks['resq_getar_kuat'] = {
+    init() {
+      this.appendDummyInput().appendField('🔔 Getaran kuat?');
+      this.setOutput(true, 'Boolean');
+      this.setColour('#2563EB');
+      this.setTooltip('Benar jika sensor getaran mendeteksi guncangan KUAT (>700/1023).');
+    },
+  };
+  arduinoGenerator.forBlock['resq_getar_kuat'] = function () {
+    return [`analogRead(A1) > 700`, 0];
+  };
+
+  // ── 30. Suhu Panas? ──────────────────────────────────────────
+  Blockly.Blocks['resq_suhu_panas'] = {
+    init() {
+      this.appendDummyInput().appendField('🌡️ Suhu panas? (>35°C)');
+      this.setOutput(true, 'Boolean');
+      this.setColour('#2563EB');
+      this.setTooltip('Benar jika suhu di atas 35 derajat Celsius.');
+    },
+  };
+  arduinoGenerator.forBlock['resq_suhu_panas'] = function () {
+    return [`(analogRead(A2) * 0.4887) > 35.0`, 0];
   };
 }
 

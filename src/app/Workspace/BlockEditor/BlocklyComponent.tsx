@@ -15,33 +15,36 @@ const INITIAL_TOOLBOX = {
   contents: [
     {
       kind: 'category',
-      name: '⚙️ Arduino',
+      name: '⚙️ Program',
       colour: '#fd761a',
       contents: [
-        { kind: 'block', type: 'arduino_setup_loop' },
-        { kind: 'block', type: 'arduino_pin_mode' },
-        { kind: 'block', type: 'arduino_serial_print' },
+        { kind: 'block', type: 'resq_program' },
+        { kind: 'block', type: 'resq_tunggu' },
+        { kind: 'block', type: 'resq_ulangi' },
+        { kind: 'block', type: 'resq_tampil' },
       ],
     },
     {
       kind: 'category',
-      name: '💡 Output',
+      name: '💡 Aksi',
       colour: '#0D9488',
       contents: [
-        { kind: 'block', type: 'arduino_led_write' },
-        { kind: 'block', type: 'arduino_digital_write' },
-        { kind: 'block', type: 'arduino_buzzer' },
-        { kind: 'block', type: 'arduino_buzzer_stop' },
-        { kind: 'block', type: 'arduino_delay' },
+        { kind: 'block', type: 'resq_led' },
+        { kind: 'block', type: 'resq_led_kedip' },
+        { kind: 'block', type: 'resq_semua_led_mati' },
+        { kind: 'block', type: 'resq_buzzer' },
+        { kind: 'block', type: 'resq_buzzer_nada' },
+        { kind: 'block', type: 'resq_buzzer_stop' },
+        { kind: 'block', type: 'resq_alarm_darurat' },
       ],
     },
     {
       kind: 'category',
-      name: '⚙️ Aktuator',
+      name: '⚙️ Gerak',
       colour: '#7C3AED',
       contents: [
-        { kind: 'block', type: 'arduino_motor_speed' },
-        { kind: 'block', type: 'arduino_servo' },
+        { kind: 'block', type: 'resq_motor' },
+        { kind: 'block', type: 'resq_servo' },
       ],
     },
     {
@@ -49,11 +52,15 @@ const INITIAL_TOOLBOX = {
       name: '📡 Sensor',
       colour: '#2563EB',
       contents: [
-        { kind: 'block', type: 'arduino_vibration_read' },
-        { kind: 'block', type: 'arduino_water_read' },
-        { kind: 'block', type: 'arduino_temp_read' },
-        { kind: 'block', type: 'arduino_digital_read' },
-        { kind: 'block', type: 'arduino_analog_read' },
+        { kind: 'block', type: 'resq_sensor_air' },
+        { kind: 'block', type: 'resq_sensor_getar' },
+        { kind: 'block', type: 'resq_sensor_suhu' },
+        { kind: 'block', type: 'resq_tombol_1' },
+        { kind: 'block', type: 'resq_tombol_2' },
+        { kind: 'block', type: 'resq_air_bahaya' },
+        { kind: 'block', type: 'resq_air_waspada' },
+        { kind: 'block', type: 'resq_getar_kuat' },
+        { kind: 'block', type: 'resq_suhu_panas' },
       ],
     },
     {
@@ -61,11 +68,14 @@ const INITIAL_TOOLBOX = {
       name: '🔀 Logika',
       colour: '#DB2777',
       contents: [
-        { kind: 'block', type: 'controls_if' },
-        { kind: 'block', type: 'logic_compare' },
-        { kind: 'block', type: 'logic_operation' },
+        { kind: 'block', type: 'resq_jika' },
+        { kind: 'block', type: 'resq_jika_tidak' },
+        { kind: 'block', type: 'resq_bandingkan' },
+        { kind: 'block', type: 'resq_dan_atau' },
+        { kind: 'block', type: 'resq_bukan' },
+        { kind: 'block', type: 'resq_hitung' },
         { kind: 'block', type: 'math_number' },
-        { kind: 'block', type: 'arduino_text' },
+        { kind: 'block', type: 'resq_teks' },
       ],
     },
   ],
@@ -134,8 +144,8 @@ export default function BlocklyComponent() {
         console.error('Failed to load workspace state', e);
       }
     } else {
-      // If empty, spawn the main setup/loop block by default
-      const block = workspaceRef.current.newBlock('arduino_setup_loop');
+      // Default: spawn the main program block
+      const block = workspaceRef.current.newBlock('resq_program');
       block.initSvg();
       block.render();
       block.moveBy(50, 50);
