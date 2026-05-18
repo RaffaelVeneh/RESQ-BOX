@@ -5,7 +5,7 @@ const SENSORS = [
   {
     pin: 'A0' as const,
     label: '💧 Skala Air',
-    subtitle: 'Sensor ketinggian air',
+    subtitle: 'Ketinggian air (Waspada > 400, Bahaya > 800)',
     min: 0,
     max: 1023,
     unit: '',
@@ -15,7 +15,7 @@ const SENSORS = [
   {
     pin: 'A1' as const,
     label: '🔔 Getaran',
-    subtitle: 'Intensitas gempa/getaran',
+    subtitle: 'Intensitas gempa (Kuat > 700)',
     min: 0,
     max: 1023,
     unit: '',
@@ -25,7 +25,7 @@ const SENSORS = [
   {
     pin: 'A2' as const,
     label: '🌡️ Suhu',
-    subtitle: 'Sensor suhu LM35',
+    subtitle: 'Sensor LM35 (Panas > 35°C)',
     min: 0,
     max: 1023,
     unit: `°C (${0} raw)`,
@@ -74,14 +74,29 @@ export default function SensorPanel() {
               <div className="flex justify-between items-center mb-xs">
                 <div>
                   <div className="font-label-md font-semibold text-on-surface">{sensor.label}</div>
-                  <div className="font-label-sm text-label-sm text-on-surface-variant">{sensor.subtitle}</div>
+                  <div className="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-xs">
+                    {sensor.subtitle}
+                    {sensor.pin === 'A2' && <span className="font-bold text-error">({tempCelsius}°C)</span>}
+                  </div>
                 </div>
-                <div
-                  className="font-code-sm text-code-sm px-sm py-xs rounded-lg border border-outline-variant font-bold min-w-[60px] text-center"
+                <input
+                  type="number"
+                  min={sensor.min}
+                  max={sensor.max}
+                  value={rawVal}
+                  onChange={(e) => {
+                    if (e.target.value === '') {
+                      setSensorValue(sensor.pin, 0);
+                    } else {
+                      let val = parseInt(e.target.value);
+                      if (val > sensor.max) val = sensor.max;
+                      if (val < sensor.min) val = sensor.min;
+                      setSensorValue(sensor.pin, val);
+                    }
+                  }}
+                  className="font-code-sm text-code-sm px-xs py-[2px] rounded-md border border-outline-variant font-bold w-[72px] text-center focus:border-primary outline-none bg-surface-container-lowest"
                   style={{ color: sensor.color }}
-                >
-                  {displayVal}{displayUnit}
-                </div>
+                />
               </div>
               <div className="relative">
                 <input

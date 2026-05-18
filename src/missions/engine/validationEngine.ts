@@ -1,16 +1,4 @@
-import type { Mission } from '../data/missions';
-
-interface Node {
-  id: string;
-  type?: string;
-}
-
-interface Edge {
-  source: string;
-  sourceHandle?: string | null;
-  target: string;
-  targetHandle?: string | null;
-}
+﻿import type { Mission } from '../data/missions';
 
 interface ValidationResult {
   passed: boolean;
@@ -19,80 +7,53 @@ interface ValidationResult {
 
 export function validateMission(
   mission: Mission,
-  nodes: Node[],
-  edges: Edge[],
-  pins: Record<string, any>
+  blocks: string[],
+  generatedCode: string
 ): ValidationResult {
   const { validation } = mission;
 
-  // --- Check 1: Required Components ---
-  for (const requiredType of validation.requiredComponents) {
-    const found = nodes.some((n) => n.type === requiredType);
-    if (!found) {
-      const labels: Record<string, string> = {
-        arduino: 'Arduino Uno',
-        led: 'LED',
-        buzzer: 'Buzzer',
-        button: 'Pushbutton',
-        analogSensor: 'Sensor Analog (Water/Vibration)',
-      };
-      return {
-        passed: false,
-        failureReason: `Komponen yang diperlukan belum ada di kanvas: ${labels[requiredType] ?? requiredType}`,
-      };
-    }
-  }
-
-  // --- Check 2: Required Connections ---
-  if (validation.requiredConnections) {
-    for (const req of validation.requiredConnections) {
-      const fromNode = nodes.find((n) => n.type === req.fromType);
-      const toNode = nodes.find((n) => n.type === req.toType);
-
-      if (!fromNode || !toNode) continue; // Already caught by check 1
-
-      const connectionExists = edges.some(
-        (e) =>
-          (e.source === fromNode.id &&
-            e.sourceHandle === req.fromHandle &&
-            e.target === toNode.id &&
-            e.targetHandle === req.toHandle) ||
-          // Also check reverse direction for bidirectional handles
-          (e.source === toNode.id &&
-            e.sourceHandle === req.toHandle &&
-            e.target === fromNode.id &&
-            e.targetHandle === req.fromHandle)
-      );
-
-      if (!connectionExists) {
+  // --- Check 1: Required Blocks ---
+  if (validation.requiredBlocks) {
+    for (const requiredType of validation.requiredBlocks) {
+      if (!blocks.includes(requiredType)) {
+        const labels: Record<string, string> = {
+          resq_program: 'Program RESQ-BOX',
+          resq_led: 'LED',
+          resq_buzzer: 'Buzzer berbunyi',
+          resq_buzzer_stop: 'Buzzer berhenti',
+          resq_sensor_air: 'Nilai Sensor Air',
+          resq_sensor_getar: 'Nilai Sensor Getaran',
+          resq_sensor_suhu: 'Nilai Suhu',
+          resq_tombol_1: 'Tombol 1 ditekan?',
+          resq_tombol_2: 'Tombol 2 ditekan?',
+          resq_jika: 'Jika...Maka',
+          resq_jika_tidak: 'Jika...Maka...Kalau Tidak',
+          resq_bandingkan: 'Blok Perbandingan (>, <, ==)',
+          resq_dan_atau: 'Blok DAN / ATAU',
+          resq_alarm_darurat: 'Alarm Darurat',
+          resq_led_kedip: 'LED Kedip',
+          resq_semua_led_mati: 'Matikan Semua LED',
+          resq_air_bahaya: 'Air berbahaya?',
+          resq_air_waspada: 'Air perlu waspada?',
+          resq_getar_kuat: 'Getaran kuat?',
+          resq_suhu_panas: 'Suhu panas?',
+        };
         return {
           passed: false,
-          failureReason: `Koneksi kabel belum benar. Pastikan ${req.fromType} (${req.fromHandle}) sudah terhubung ke ${req.toType} (${req.toHandle}).`,
+          failureReason: `Blok yang diperlukan belum ada di kanvas: ${labels[requiredType] ?? requiredType}`,
         };
       }
     }
   }
 
-  // --- Check 3: Pin State Conditions ---
-  if (validation.pinConditions) {
-    for (const condition of validation.pinConditions) {
-      const pinValue = pins[condition.pin];
-
-      if (condition.state === 'ANALOG') {
-        const threshold = condition.threshold ?? 500;
-        if (typeof pinValue !== 'number' || pinValue < threshold) {
-          return {
-            passed: false,
-            failureReason: `Pin ${condition.pin} belum mencapai nilai yang dibutuhkan. Coba jalankan simulasi terlebih dahulu, lalu atur sensor analog ke nilai yang tepat.`,
-          };
-        }
-      } else {
-        if (pinValue !== condition.state) {
-          return {
-            passed: false,
-            failureReason: `Simulasi harus dijalankan dan Pin ${condition.pin} harus dalam kondisi ${condition.state}. Tekan "Run Simulation" terlebih dahulu.`,
-          };
-        }
+  // --- Check 2: Required Code Strings ---
+  if (validation.codeContains) {
+    for (const reqCode of validation.codeContains) {
+      if (!generatedCode.includes(reqCode)) {
+        return {
+          passed: false,
+          failureReason: `Susunan blok sepertinya belum tepat. Pastikan kamu meletakkan blok sesuai petunjuk misi. Coba cek lagi ya!`,
+        };
       }
     }
   }

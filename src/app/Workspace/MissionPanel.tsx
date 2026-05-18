@@ -2,8 +2,10 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MISSIONS } from '../../missions/data/missions';
 import { useMissionStore } from '../../store/missionStore';
-import { useSimulatorStore } from '../../store/simulatorStore';
 import { validateMission } from '../../missions/engine/validationEngine';
+import * as Blockly from 'blockly/core';
+import { javascriptGenerator } from '../../engine/blockly/jsGenerator';
+import { useWorkspaceStore } from '../../store/workspaceStore';
 
 export default function MissionPanel({ missionId }: { missionId: string }) {
   const navigate = useNavigate();
@@ -13,7 +15,6 @@ export default function MissionPanel({ missionId }: { missionId: string }) {
 
   const { completeMission, setValidationResult, validationStatus, validationMessage } =
     useMissionStore();
-  const { nodes, edges, pins } = useSimulatorStore();
 
   if (!mission) {
     return (
@@ -32,10 +33,14 @@ export default function MissionPanel({ missionId }: { missionId: string }) {
   const handleValidate = () => {
     setValidationResult('checking', '');
     setTimeout(() => {
-      const result = validateMission(mission, nodes, edges, pins);
+      const workspace = Blockly.getMainWorkspace();
+      const blocks = workspace.getAllBlocks(false).map((b) => b.type);
+      const generatedCode = javascriptGenerator.workspaceToCode(workspace);
+
+      const result = validateMission(mission, blocks, generatedCode);
       if (result.passed) {
         completeMission(mission.id);
-        setValidationResult('pass', 'Misi selesai! Rangkaian kamu benar! 🎉');
+        setValidationResult('pass', 'Misi selesai! Blok kode kamu sudah benar! 🎉');
       } else {
         setValidationResult('fail', result.failureReason ?? 'Terjadi kesalahan yang tidak diketahui.');
       }
@@ -43,6 +48,7 @@ export default function MissionPanel({ missionId }: { missionId: string }) {
   };
 
   const handleFinish = () => {
+    useWorkspaceStore.getState().clearDraft(mission.id);
     navigate('/');
   };
 

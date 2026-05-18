@@ -81,10 +81,10 @@ const INITIAL_TOOLBOX = {
   ],
 };
 
-export default function BlocklyComponent() {
+export default function BlocklyComponent({ contextId }: { contextId: string }) {
   const blocklyDiv = useRef<HTMLDivElement>(null);
   const workspaceRef = useRef<Blockly.WorkspaceSvg | null>(null);
-  const { workspaceJson, setWorkspaceState } = useWorkspaceStore();
+  const { getActiveDraft, saveDraft } = useWorkspaceStore();
   const [codePreview, setCodePreview] = useState<string>('');
   
   const [showCode, setShowCode] = useState(false);
@@ -136,12 +136,13 @@ export default function BlocklyComponent() {
       }
     }
 
-    // Load initial state if exists
-    if (workspaceJson) {
+    // Load draft for this context, if any
+    const draft = getActiveDraft();
+    if (draft?.workspaceJson) {
       try {
-        Blockly.serialization.workspaces.load(workspaceJson, workspaceRef.current);
+        Blockly.serialization.workspaces.load(draft.workspaceJson, workspaceRef.current);
       } catch (e) {
-        console.error('Failed to load workspace state', e);
+        console.error('Failed to load workspace draft', e);
       }
     } else {
       // Default: spawn the main program block
@@ -170,9 +171,9 @@ export default function BlocklyComponent() {
         const generatedJsCode = javascriptGenerator.workspaceToCode(workspaceRef.current);
         setCodePreview(generatedCode);
 
-        // Save State
+        // Save draft for active context
         const state = Blockly.serialization.workspaces.save(workspaceRef.current);
-        setWorkspaceState(state, generatedCode, generatedJsCode);
+        saveDraft(contextId, state, generatedCode, generatedJsCode);
       }
     };
 
@@ -187,7 +188,7 @@ export default function BlocklyComponent() {
       const initialArduinoCode = arduinoGenerator.workspaceToCode(workspaceRef.current);
       const initialJsCode = javascriptGenerator.workspaceToCode(workspaceRef.current);
       setCodePreview(initialArduinoCode);
-      setWorkspaceState(state, initialArduinoCode, initialJsCode);
+      saveDraft(contextId, state, initialArduinoCode, initialJsCode);
     };
     syncCode();
 

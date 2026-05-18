@@ -18,7 +18,8 @@ export default function Workspace() {
   const missionParam = searchParams.get('mission');
 
   const { setActiveMission, resetValidation } = useMissionStore();
-  const { generatedJsCode } = useWorkspaceStore();
+  const { setActiveContext, getActiveDraft } = useWorkspaceStore();
+  const generatedJsCode = getActiveDraft()?.generatedJsCode ?? '';
   const {
     isRunning, setRunning,
     addLog, clearLogs,
@@ -32,6 +33,10 @@ export default function Workspace() {
     : null;
 
   useEffect(() => {
+    // Set the active context in the store so BlocklyComponent knows which draft to load/save
+    const contextId = activeMission ? activeMission.id : (searchParams.get('project') ?? 'free_workspace');
+    setActiveContext(contextId);
+
     if (activeMission) setActiveMission(activeMission.id);
     else setActiveMission(null);
     resetValidation();
