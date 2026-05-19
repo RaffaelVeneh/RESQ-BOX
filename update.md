@@ -34,3 +34,6 @@ Catatan perjalanan pengembangan aplikasi web RESQ-BOX.
   - Tip box kuning muncul otomatis kalau langkah ada tips.
 - **missions.ts** diupdate: interface `Mission` ditambah field `steps: MissionStep[]`, dan data tiap misi (level 1–5) sudah dilengkapi langkah bertahap yang ditulis dalam bahasa ramah anak-anak.
 - Desain mengikuti color system yang sudah ada (primary, secondary-container, surface tokens Tailwind).
+
+
+test
