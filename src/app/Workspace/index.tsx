@@ -1,7 +1,6 @@
-import { useRef } from 'react';
+import { useRef, useEffect } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useEffect } from 'react';
 import BlockEditor from './BlockEditor';
 import MissionPanel from './MissionPanel';
 import SensorPanel from './SensorPanel';
@@ -10,6 +9,7 @@ import { MISSIONS } from '../../missions/data/missions';
 import { useMissionStore } from '../../store/missionStore';
 import { useWorkspaceStore } from '../../store/workspaceStore';
 import { useRuntimeStore } from '../../store/runtimeStore';
+import { sanitizeCode } from '../../engine/codeSanitizer';
 
 
 export default function Workspace() {
@@ -17,7 +17,7 @@ export default function Workspace() {
   const [searchParams] = useSearchParams();
   const missionParam = searchParams.get('mission');
 
-  const { setActiveMission, resetValidation } = useMissionStore();
+  const { setActiveMission, resetValidation, isUnlocked } = useMissionStore();
   const { setActiveContext, getActiveDraft } = useWorkspaceStore();
   const generatedJsCode = getActiveDraft()?.generatedJsCode ?? '';
   const {
@@ -31,6 +31,14 @@ export default function Workspace() {
   const activeMission = missionParam
     ? MISSIONS.find((m) => m.id === missionParam) ?? null
     : null;
+
+  // ── Security Guard: redirect if mission is locked ─────────────
+  useEffect(() => {
+    if (activeMission && !isUnlocked(activeMission.id)) {
+      // Mission is locked — redirect to dashboard
+      navigate('/', { replace: true });
+    }
+  }, [activeMission?.id, isUnlocked, navigate]);
 
   useEffect(() => {
     // Set the active context in the store so BlocklyComponent knows which draft to load/save
@@ -75,6 +83,14 @@ export default function Workspace() {
     };
 
     try {
+      // ── Security: sanitize generated code ──
+      if (!sanitizeCode(generatedJsCode)) {
+        addLog('🔒 Kode diblokir karena alasan keamanan. Hapus draft yang rusak.', 'error');
+        setRunning(false);
+        runningRef.current = false;
+        return;
+      }
+
       const AsyncFn = Object.getPrototypeOf(async function () {}).constructor;
       const runnerCode = `
         async function setup() { await api.print('🚀 Program dimulai', 'system'); }

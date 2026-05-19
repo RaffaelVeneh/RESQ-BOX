@@ -82,6 +82,30 @@ export const useMissionStore = create<MissionState>()(
     }),
     {
       name: 'resqbox-mission-storage',
+      onRehydrateStorage: () => {
+        return (state, error) => {
+          if (error || !state) return;
+          // ── Integrity check: validate completedMissionIds ──
+          const { completedMissionIds } = state;
+          const validIds = new Set(MISSIONS.map((m) => m.id));
+          const cleaned = completedMissionIds.filter((id) => {
+            if (!validIds.has(id)) return false;
+            const mission = MISSIONS.find((m) => m.id === id)!;
+            if (mission.level === 1) return true;
+            const prevMission = MISSIONS.find(
+              (m) => m.category === mission.category && m.level === mission.level - 1
+            );
+            if (!prevMission) return true;
+            return completedMissionIds.includes(prevMission.id);
+          });
+          if (cleaned.length !== completedMissionIds.length) {
+            console.warn(
+              `[Security] Removed ${completedMissionIds.length - cleaned.length} tampered mission(s).`
+            );
+            state.completedMissionIds = cleaned;
+          }
+        };
+      },
     }
   )
 );
