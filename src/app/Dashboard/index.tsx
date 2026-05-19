@@ -4,6 +4,69 @@ import { MISSIONS, CATEGORIES } from '../../missions/data/missions';
 import { useMissionStore } from '../../store/missionStore';
 import { useWorkspaceStore } from '../../store/workspaceStore';
 
+// ── Credits Modal ───────────────────────────────────────────────
+function CreditsModal({ onClose }: { onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-md bg-black/50 backdrop-blur-sm" onClick={onClose}>
+      <div
+        className="bg-surface rounded-2xl shadow-2xl p-lg max-w-[380px] w-full mx-md flex flex-col gap-md animate-in fade-in zoom-in-95 duration-200"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center gap-sm">
+          <span className="material-symbols-outlined text-amber-500" style={{ fontSize: '28px', fontVariationSettings: "'FILL' 1" }}>
+            star
+          </span>
+          <h3 className="font-title-md text-title-md text-on-surface">Credits</h3>
+        </div>
+
+        <p className="font-label-caps text-label-caps text-secondary-container uppercase tracking-wide">
+          Disusun oleh Tim Eternal
+        </p>
+
+        <div className="flex flex-col gap-sm">
+          {[
+            { name: 'Muhammad Zidane Romadhona Haryanto', role: 'Ketua, Direktur, Asisten Developer', icon: 'person' },
+            { name: 'Raffael Vincent Nathaniel Handoko', role: 'Developer Utama, Fullstack', icon: 'code' },
+            { name: 'Zahra Rokhadatul Aisy Ramadhani', role: 'Asisten Developer, Penulis Teknis', icon: 'edit_note' },
+            { name: 'Lintang Pansavia Lysandra', role: 'Project Manager, Penulis Teknis', icon: 'group' },
+          ].map((member, i) => (
+            <div key={i} className="flex items-start gap-sm bg-surface-container-low rounded-xl p-sm">
+              <div className="h-10 w-10 rounded-full bg-secondary-container flex items-center justify-center shrink-0">
+                <span className="material-symbols-outlined text-white" style={{ fontSize: '18px' }}>
+                  {member.icon}
+                </span>
+              </div>
+              <div>
+                <p className="font-label-md font-semibold text-on-surface">{member.name}</p>
+                <p className="font-label-sm text-on-surface-variant">{member.role}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="border-t border-outline-variant pt-sm">
+          <div className="flex items-start gap-sm bg-[#FFF7ED] rounded-xl p-sm border border-[#FED7AA]">
+            <span className="material-symbols-outlined text-secondary-container" style={{ fontSize: '18px' }}>
+              school
+            </span>
+            <div>
+              <p className="font-label-md font-semibold text-on-surface">Rizki Arumning Tyas, M.Pd.</p>
+              <p className="font-label-sm text-on-surface-variant">Pembimbing</p>
+            </div>
+          </div>
+        </div>
+
+        <button
+          onClick={onClose}
+          className="w-full py-sm bg-primary text-on-primary font-label-caps text-label-caps rounded-xl hover:opacity-90 transition-colors"
+        >
+          Tutup
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ── Confirmation Modal ──────────────────────────────────────────
 function ConfirmModal({
   title,
@@ -159,6 +222,7 @@ export default function Dashboard() {
   const [confirmReplay, setConfirmReplay] = useState<string | null>(null); // missionId
   const [confirmDeleteProject, setConfirmDeleteProject] = useState<string | null>(null); // projectId
   const [showNewProject, setShowNewProject] = useState(false);
+  const [showCredits, setShowCredits] = useState(false);
 
   const getMissionStatus = (missionId: string) => {
     if (completedMissionIds.includes(missionId)) return 'completed';
@@ -219,6 +283,7 @@ export default function Dashboard() {
           onCancel={() => setShowNewProject(false)}
         />
       )}
+      {showCredits && <CreditsModal onClose={() => setShowCredits(false)} />}
 
       {/* TopAppBar */}
       <header className="bg-surface dark:bg-surface-dim docked full-width top-0 border-b border-outline-variant dark:border-outline flat no shadows flex justify-between items-center w-full px-margin-desktop h-16 sticky z-40">
@@ -234,6 +299,13 @@ export default function Dashboard() {
           <div className="flex items-center gap-sm text-primary dark:text-primary-fixed">
             <button className="hover:bg-surface-container dark:hover:bg-surface-container-high transition-colors p-xs rounded-full flex items-center justify-center h-10 w-10">
               <span className="material-symbols-outlined">wifi_tethering</span>
+            </button>
+            <button
+              onClick={() => setShowCredits(true)}
+              className="hover:bg-surface-container dark:hover:bg-surface-container-high transition-colors p-xs rounded-full flex items-center justify-center h-10 w-10"
+              title="Credits"
+            >
+              <span className="material-symbols-outlined">star</span>
             </button>
             <button className="hover:bg-surface-container dark:hover:bg-surface-container-high transition-colors p-xs rounded-full flex items-center justify-center h-10 w-10">
               <span className="material-symbols-outlined">account_circle</span>
