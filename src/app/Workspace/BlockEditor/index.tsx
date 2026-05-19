@@ -10,7 +10,7 @@ export default function BlockEditor() {
   
   const missionParam = searchParams.get('mission');
   const targetContextId = missionParam
-    ? (MISSIONS.find(m => m.level === parseInt(missionParam))?.id ?? 'free_workspace')
+    ? (MISSIONS.find(m => m.id === missionParam)?.id ?? 'free_workspace')
     : (searchParams.get('project') ?? 'free_workspace');
 
   // Wait until the store has caught up with the URL parameter (handled by Workspace useEffect)

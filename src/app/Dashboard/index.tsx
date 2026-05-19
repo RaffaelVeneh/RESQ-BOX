@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MISSIONS } from '../../missions/data/missions';
+import { MISSIONS, CATEGORIES } from '../../missions/data/missions';
 import { useMissionStore } from '../../store/missionStore';
 import { useWorkspaceStore } from '../../store/workspaceStore';
 
@@ -95,6 +95,50 @@ function NewProjectModal({
   );
 }
 
+function TrianglePageButton({
+  direction,
+  disabled,
+  onClick,
+  label,
+}: {
+  direction: 'prev' | 'next';
+  disabled: boolean;
+  onClick: () => void;
+  label: string;
+}) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      onClick={onClick}
+      disabled={disabled}
+      className="group h-10 w-10 flex items-center justify-center rounded-lg hover:bg-surface-container-high disabled:opacity-25 disabled:cursor-not-allowed transition-all"
+    >
+      <svg
+        width="28"
+        height="28"
+        viewBox="0 0 28 28"
+        aria-hidden="true"
+        className={`overflow-visible drop-shadow-[0_2px_0_rgba(0,0,0,0.18)] transition-transform duration-150 group-hover:-translate-y-[1px] group-active:translate-y-[2px] group-active:drop-shadow-none ${
+          direction === 'prev' ? 'scale-x-[-1]' : ''
+        }`}
+      >
+        <polygon points="8,4 23,14 8,24" fill="#9D4300" transform="translate(3 3)" opacity="0.55" />
+        <polygon points="8,4 23,14 8,24 11,20 11,8" fill="#B35000" />
+        <polygon
+          points="7,3 23,14 7,25"
+          fill="#FD761A"
+          stroke="#D65F00"
+          strokeWidth="1"
+          strokeLinejoin="round"
+        />
+        <polygon points="9,6 20,14 9,12" fill="#FFB066" opacity="0.9" />
+        <polygon points="9,16 20,14 9,22" fill="#D95C00" opacity="0.75" />
+      </svg>
+    </button>
+  );
+}
+
 // ── Helpers ─────────────────────────────────────────────────────
 function formatRelative(iso: string) {
   const diff = Date.now() - new Date(iso).getTime();
@@ -109,7 +153,7 @@ function formatRelative(iso: string) {
 // ── Dashboard ───────────────────────────────────────────────────
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { completedMissionIds, isUnlocked } = useMissionStore();
+  const { completedMissionIds, isUnlocked, currentCategoryIndex, setCurrentCategoryIndex, getCategoryProgress } = useMissionStore();
   const { projects, createProject, deleteProject, drafts, clearDraft } = useWorkspaceStore();
 
   const [confirmReplay, setConfirmReplay] = useState<string | null>(null); // missionId
@@ -128,19 +172,16 @@ export default function Dashboard() {
 
   const handleMissionClick = (mission: typeof MISSIONS[0], status: string) => {
     if (status === 'completed') {
-      // Show replay confirm
       setConfirmReplay(mission.id);
     } else {
-      // Start or continue
-      navigate(`/workspace?mission=${mission.level}`);
+      navigate(`/workspace?mission=${mission.id}`);
     }
   };
 
   const handleConfirmReplay = (missionId: string) => {
     clearDraft(missionId);
-    const m = MISSIONS.find((x) => x.id === missionId)!;
     setConfirmReplay(null);
-    navigate(`/workspace?mission=${m.level}`);
+    navigate(`/workspace?mission=${missionId}`);
   };
 
   const handleCreateProject = (name: string) => {
@@ -210,13 +251,11 @@ export default function Dashboard() {
               Progress: {completedMissionIds.length} / {MISSIONS.length} Misi Selesai
             </span>
           </div>
-          <div className="flex gap-xs h-2 w-64 rounded-full overflow-hidden bg-surface-variant">
-            {MISSIONS.map((m) => (
-              <div
-                key={m.id}
-                className={`flex-1 transition-all ${completedMissionIds.includes(m.id) ? 'bg-[#16A34A]' : 'bg-transparent'}`}
-              />
-            ))}
+          <div className="h-2 w-64 rounded-full overflow-hidden bg-surface-variant">
+            <div
+              className="h-full bg-[#16A34A] transition-all duration-500 rounded-full"
+              style={{ width: `${MISSIONS.length > 0 ? (completedMissionIds.length / MISSIONS.length) * 100 : 0}%` }}
+            />
           </div>
         </div>
       </div>
@@ -344,11 +383,49 @@ export default function Dashboard() {
         <aside className="md:col-span-4 flex flex-col gap-md">
           <div className="flex justify-between items-end border-b-2 border-outline-variant pb-xs">
             <h2 className="font-headline-lg text-headline-lg text-primary">Mission Center</h2>
-            <span className="font-label-caps text-label-caps text-on-surface-variant">SEASON 1</span>
+            <div className="flex items-center gap-1">
+              <TrianglePageButton
+                direction="prev"
+                label="Kategori sebelumnya"
+                onClick={() => setCurrentCategoryIndex(Math.max(0, currentCategoryIndex - 1))}
+                disabled={currentCategoryIndex === 0}
+              />
+              <span className="font-label-caps text-label-caps text-on-surface-variant min-w-[100px] text-center">
+                {CATEGORIES[currentCategoryIndex].title.toUpperCase()}
+              </span>
+              <TrianglePageButton
+                direction="next"
+                label="Kategori berikutnya"
+                onClick={() => setCurrentCategoryIndex(Math.min(CATEGORIES.length - 1, currentCategoryIndex + 1))}
+                disabled={currentCategoryIndex === CATEGORIES.length - 1}
+              />
+            </div>
           </div>
 
+          {/* Category Progress */}
+          {(() => {
+            const cat = CATEGORIES[currentCategoryIndex];
+            const progress = getCategoryProgress(cat.id);
+            return (
+              <div>
+                <div className="flex items-center gap-sm">
+                  <span className="material-symbols-outlined text-secondary-container">{cat.icon}</span>
+                  <span className="font-label-md text-on-surface-variant">
+                    Progress: {progress.completed} / {progress.total} Misi Selesai
+                  </span>
+                </div>
+                <div className="mt-1 h-2 w-full rounded-full overflow-hidden bg-surface-variant">
+                  <div
+                    className="h-full bg-[#16A34A] transition-all duration-500 rounded-full"
+                    style={{ width: `${(progress.completed / progress.total) * 100}%` }}
+                  />
+                </div>
+              </div>
+            );
+          })()}
+
           <div className="flex flex-col gap-sm">
-            {MISSIONS.map((mission) => {
+            {MISSIONS.filter((m) => m.category === CATEGORIES[currentCategoryIndex].id).map((mission) => {
               const status = getMissionStatus(mission.id);
               const hasDraft = hasMissionDraft(mission.id);
 

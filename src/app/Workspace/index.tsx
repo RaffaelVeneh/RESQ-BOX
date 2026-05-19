@@ -29,7 +29,7 @@ export default function Workspace() {
   const runningRef = useRef(false);
 
   const activeMission = missionParam
-    ? MISSIONS.find((m) => m.level === parseInt(missionParam)) ?? null
+    ? MISSIONS.find((m) => m.id === missionParam) ?? null
     : null;
 
   useEffect(() => {

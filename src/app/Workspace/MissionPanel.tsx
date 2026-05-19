@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MISSIONS } from '../../missions/data/missions';
+import { MISSIONS, CATEGORIES } from '../../missions/data/missions';
 import { useMissionStore } from '../../store/missionStore';
 import { validateMission } from '../../missions/engine/validationEngine';
 import * as Blockly from 'blockly/core';
@@ -34,10 +34,9 @@ export default function MissionPanel({ missionId }: { missionId: string }) {
     setValidationResult('checking', '');
     setTimeout(() => {
       const workspace = Blockly.getMainWorkspace();
-      const blocks = workspace.getAllBlocks(false).map((b) => b.type);
       const generatedCode = javascriptGenerator.workspaceToCode(workspace);
 
-      const result = validateMission(mission, blocks, generatedCode);
+      const result = validateMission(mission, workspace, generatedCode);
       if (result.passed) {
         completeMission(mission.id);
         setValidationResult('pass', 'Misi selesai! Blok kode kamu sudah benar! 🎉');
@@ -80,7 +79,7 @@ export default function MissionPanel({ missionId }: { missionId: string }) {
             {mission.icon}
           </span>
           <span className="font-label-caps text-label-caps text-secondary-container">
-            LEVEL {mission.level}
+            {CATEGORIES.find((c) => c.id === mission.category)?.title.toUpperCase()} • LEVEL {mission.level}
           </span>
         </div>
         <h2 className="font-title-md text-title-md text-primary leading-tight">{mission.title}</h2>
