@@ -288,7 +288,7 @@ export default function Dashboard() {
       {/* TopAppBar */}
       <header className="bg-surface dark:bg-surface-dim docked full-width top-0 border-b border-outline-variant dark:border-outline flat no shadows flex justify-between items-center w-full px-margin-desktop h-16 sticky z-40">
         <div className="flex items-center gap-sm">
-          <img alt="RESQ-BOX Logo" className="h-8 w-8 rounded-md object-contain" src="/logo.png" />
+          <img alt="RESQ-BOX Logo" className="h-8 w-8 rounded-md object-contain" src="/logo2.png" />
           <span className="font-display-lg text-headline-lg font-black tracking-tight text-secondary dark:text-secondary-fixed">RESQ-BOX</span>
         </div>
         <div className="flex items-center gap-md">
