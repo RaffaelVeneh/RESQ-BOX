@@ -13,7 +13,7 @@ export interface MitigationAction {
 
 export interface MitigationScenario {
   id: string;
-  disaster: 'gempa' | 'banjir' | 'kebakaran' | 'tsunami' | 'evakuasi';
+  disaster: 'gempa' | 'kebakaran' | 'tsunami' | 'evakuasi';
   level: number;
   title: string;
   subtitle: string;      // Konteks singkat situasi
@@ -101,73 +101,6 @@ export const MITIGATION_SCENARIOS: MitigationScenario[] = [
     ],
   },
 
-  // ─────────────────────────────────────────────
-  // Level 2: Banjir
-  // ─────────────────────────────────────────────
-  {
-    id: 'banjir-rumah',
-    disaster: 'banjir',
-    level: 2,
-    title: 'Air Mulai Masuk Rumah!',
-    subtitle: 'Hujan deras semalaman, air sungai meluap',
-    description:
-      'Pagi-pagi kamu melihat air mulai masuk dari bawah pintu. Air hujan terus turun dan sungai di dekat rumahmu meluap. Banjir akan segera tiba!',
-    icon: 'flood',
-    color: 'bg-[#DBEAFE]',
-    borderColor: 'border-[#3B82F6]',
-    correctOrder: ['alert-family', 'move-valuables', 'turn-off-electric', 'go-high', 'contact-rescue'],
-    actions: [
-      {
-        id: 'alert-family',
-        label: 'Bangunkan dan beritahu seluruh keluarga',
-        icon: 'family_restroom',
-        isCorrect: true,
-        explanation: 'Benar! Semua anggota keluarga harus tahu dan siap mengungsi.',
-      },
-      {
-        id: 'move-valuables',
-        label: 'Pindahkan dokumen penting ke tempat tinggi',
-        icon: 'folder_open',
-        isCorrect: true,
-        explanation: 'Benar! Dokumen seperti KTP, akta kelahiran, dan sertifikat harus diselamatkan.',
-      },
-      {
-        id: 'turn-off-electric',
-        label: 'Matikan listrik dari MCB',
-        icon: 'electrical_services',
-        isCorrect: true,
-        explanation: 'Benar! Listrik dan air adalah kombinasi berbahaya. MCB harus dimatikan sebelum air masuk.',
-      },
-      {
-        id: 'go-high',
-        label: 'Segera pergi ke tempat yang lebih tinggi',
-        icon: 'terrain',
-        isCorrect: true,
-        explanation: 'Benar! Evakuasi ke tempat tinggi adalah prioritas utama.',
-      },
-      {
-        id: 'contact-rescue',
-        label: 'Hubungi BPBD atau tim penyelamat',
-        icon: 'phone_in_talk',
-        isCorrect: true,
-        explanation: 'Benar! Tim penyelamat perlu tahu posisimu untuk membantu.',
-      },
-      {
-        id: 'stay-home',
-        label: 'Tetap di rumah dan tunggu bantuan',
-        icon: 'home',
-        isCorrect: false,
-        explanation: 'Salah! Banjir bisa naik cepat. Jangan tunggu di rumah jika air sudah masuk!',
-      },
-      {
-        id: 'swim',
-        label: 'Berenang melewati banjir ke tempat aman',
-        icon: 'pool',
-        isCorrect: false,
-        explanation: 'Salah! Arus banjir sangat kuat. Jangan coba-coba berenang melintasinya!',
-      },
-    ],
-  },
 
   // ─────────────────────────────────────────────
   // Level 3: Kebakaran

@@ -410,18 +410,18 @@ export default function Dashboard() {
                 className="relative flex flex-col items-start text-left p-md rounded-2xl bg-[#FFF7ED] border-2 border-[#F97316] hover:shadow-lg hover:-translate-y-1 transition-all duration-200"
               >
                 <div className="flex items-center gap-sm mb-sm">
-                  <span className="material-symbols-outlined text-[#EA580C] text-3xl">code</span>
+                  <span className="material-symbols-outlined text-[#EA580C] text-3xl">widgets</span>
                   <div>
-                    <div className="font-label-caps text-label-caps text-[#9A3412] uppercase">Arduino Blockly</div>
-                    <h3 className="font-title-md text-title-md font-bold text-on-surface">Coding Lab</h3>
+                    <div className="font-label-caps text-label-caps text-[#9A3412] uppercase">Simulasi Interaktif</div>
+                    <h3 className="font-title-md text-title-md font-bold text-on-surface">Ruang Simulasi</h3>
                   </div>
                 </div>
                 <p className="font-body-sm text-body-sm text-on-surface-variant mb-md leading-relaxed">
-                  Buat program Arduino dengan blok visual. Export ke Wokwi untuk simulasi sirkuit.
+                  Susun instruksi logika penyelamatan bencana dengan blok visual. Uji langsung di simulator RESQ-BOX!
                 </p>
                 <div className="flex items-center gap-xs text-[#EA580C] font-label-sm text-label-sm">
                   <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>arrow_forward</span>
-                  Buka Editor
+                  Mulai Simulasi
                 </div>
               </button>
 
@@ -508,7 +508,7 @@ export default function Dashboard() {
                       <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
                     </div>
                     <div className="flex-grow">
-                      <p className="font-label-caps text-label-caps text-on-surface-variant">LEVEL {mission.level} • SELESAI</p>
+                      <p className="font-label-caps text-label-caps text-on-surface-variant">{mission.category === 'proyek' ? 'KASUS' : 'LEVEL'} {mission.level} • SELESAI</p>
                       <h4 className="font-title-md text-title-md text-primary">{mission.title}</h4>
                     </div>
                     <button
@@ -529,7 +529,7 @@ export default function Dashboard() {
                         <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>{mission.icon}</span>
                       </div>
                       <div className="flex-grow">
-                        <p className="font-label-caps text-label-caps text-secondary-container">LEVEL {mission.level} • AKTIF</p>
+                        <p className="font-label-caps text-label-caps text-secondary-container">{mission.category === 'proyek' ? 'KASUS' : 'LEVEL'} {mission.level} • AKTIF</p>
                         <h4 className="font-title-md text-title-md text-primary">{mission.title}</h4>
                       </div>
                     </div>
@@ -560,7 +560,7 @@ export default function Dashboard() {
                     <span className="material-symbols-outlined">lock</span>
                   </div>
                   <div className="flex-grow">
-                    <p className="font-label-caps text-label-caps text-outline">LEVEL {mission.level} • TERKUNCI</p>
+                    <p className="font-label-caps text-label-caps text-outline">{mission.category === 'proyek' ? 'KASUS' : 'LEVEL'} {mission.level} • TERKUNCI</p>
                     <h4 className="font-title-md text-title-md text-on-surface-variant">{mission.title}</h4>
                   </div>
                 </div>

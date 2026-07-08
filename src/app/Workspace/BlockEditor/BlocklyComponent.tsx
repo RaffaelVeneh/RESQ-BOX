@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import * as Blockly from 'blockly/core';
 import 'blockly/blocks'; // Import default blocks
 import { ResqTheme } from '../../../engine/blockly/theme';
@@ -15,7 +15,7 @@ const INITIAL_TOOLBOX = {
   contents: [
     {
       kind: 'category',
-      name: '⚙️ Program',
+      name: '⚙️ Sistem',
       colour: '#fd761a',
       contents: [
         { kind: 'block', type: 'resq_program' },
@@ -26,7 +26,7 @@ const INITIAL_TOOLBOX = {
     },
     {
       kind: 'category',
-      name: '💡 Aksi',
+      name: '💡 Peringatan & Lampu',
       colour: '#0D9488',
       contents: [
         { kind: 'block', type: 'resq_led' },
@@ -40,7 +40,7 @@ const INITIAL_TOOLBOX = {
     },
     {
       kind: 'category',
-      name: '⚙️ Gerak',
+      name: '⚙️ Mekanik Evakuasi',
       colour: '#7C3AED',
       contents: [
         { kind: 'block', type: 'resq_motor' },
@@ -49,23 +49,20 @@ const INITIAL_TOOLBOX = {
     },
     {
       kind: 'category',
-      name: '📡 Sensor',
+      name: '📡 Pemantauan Alam',
       colour: '#2563EB',
       contents: [
-        { kind: 'block', type: 'resq_sensor_air' },
         { kind: 'block', type: 'resq_sensor_getar' },
         { kind: 'block', type: 'resq_sensor_suhu' },
         { kind: 'block', type: 'resq_tombol_1' },
         { kind: 'block', type: 'resq_tombol_2' },
-        { kind: 'block', type: 'resq_air_bahaya' },
-        { kind: 'block', type: 'resq_air_waspada' },
         { kind: 'block', type: 'resq_getar_kuat' },
         { kind: 'block', type: 'resq_suhu_panas' },
       ],
     },
     {
       kind: 'category',
-      name: '🔀 Logika',
+      name: '🔀 Pengambilan Keputusan',
       colour: '#DB2777',
       contents: [
         { kind: 'block', type: 'resq_jika' },
@@ -85,9 +82,6 @@ export default function BlocklyComponent({ contextId }: { contextId: string }) {
   const blocklyDiv = useRef<HTMLDivElement>(null);
   const workspaceRef = useRef<Blockly.WorkspaceSvg | null>(null);
   const { getActiveDraft, saveDraft } = useWorkspaceStore();
-  const [codePreview, setCodePreview] = useState<string>('');
-  
-  const [showCode, setShowCode] = useState(false);
 
   useEffect(() => {
     if (!blocklyDiv.current) return;
@@ -166,10 +160,9 @@ export default function BlocklyComponent({ contextId }: { contextId: string }) {
       if (event.isUiEvent) return;
 
       if (workspaceRef.current) {
-        // Generate Code
+        // Generate code internally (needed for runtime & validation)
         const generatedCode = arduinoGenerator.workspaceToCode(workspaceRef.current);
         const generatedJsCode = javascriptGenerator.workspaceToCode(workspaceRef.current);
-        setCodePreview(generatedCode);
 
         // Save draft for active context
         const state = Blockly.serialization.workspaces.save(workspaceRef.current);
@@ -187,7 +180,6 @@ export default function BlocklyComponent({ contextId }: { contextId: string }) {
       const state = Blockly.serialization.workspaces.save(workspaceRef.current);
       const initialArduinoCode = arduinoGenerator.workspaceToCode(workspaceRef.current);
       const initialJsCode = javascriptGenerator.workspaceToCode(workspaceRef.current);
-      setCodePreview(initialArduinoCode);
       saveDraft(contextId, state, initialArduinoCode, initialJsCode);
     };
     syncCode();
@@ -214,33 +206,16 @@ export default function BlocklyComponent({ contextId }: { contextId: string }) {
     <div className="flex flex-col h-full w-full bg-surface">
       <div className="flex justify-between items-center p-sm border-b border-outline-variant bg-surface-container-lowest">
         <h2 className="font-title-md text-title-md text-primary flex items-center gap-2">
-          <span className="material-symbols-outlined text-secondary-container">extension</span>
-          Block Editor
+          <span className="material-symbols-outlined text-secondary-container">widgets</span>
+          Ruang Simulasi
         </h2>
-        <div className="flex items-center gap-sm">
-          <button 
-            onClick={() => setShowCode(!showCode)}
-            className="flex items-center gap-xs px-sm py-xs bg-primary-container text-white rounded tactile-btn font-label-caps text-label-caps"
-          >
-            <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>code</span>
-            {showCode ? 'HIDE CODE' : 'SHOW CODE'}
-          </button>
-        </div>
       </div>
       
       <div className="flex-1 relative flex">
         <div 
           ref={blocklyDiv} 
-          className={`absolute inset-0 ${showCode ? 'w-2/3 border-r border-outline-variant' : 'w-full'}`}
+          className="absolute inset-0 w-full"
         />
-        {showCode && (
-          <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-[#1E1E1E] text-[#D4D4D4] p-md overflow-auto font-code-sm text-code-sm">
-            <div className="flex justify-between items-center mb-sm border-b border-[#333] pb-xs">
-              <span className="font-bold">Arduino C</span>
-            </div>
-            <pre className="whitespace-pre-wrap">{codePreview}</pre>
-          </div>
-        )}
       </div>
     </div>
   );

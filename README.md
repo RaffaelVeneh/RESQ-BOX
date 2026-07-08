@@ -1,73 +1,39 @@
-# React + TypeScript + Vite
+# RESQ-BOX Web Ecosystem (ResqueBlock)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Platform pembelajaran mitigasi bencana interaktif berbasis *Visual Block Programming* yang dirancang khusus untuk memenuhi kebutuhan Divisi Inovasi Pembelajaran Digital Pendidikan pada ajang LIDM 2026.
 
-Currently, two official plugins are available:
+Ekosistem web ini berfungsi sebagai ruang rancang bangun logika (*logical simulation hub*) bagi siswa untuk menyusun instruksi sistem kesiapsiagaan bencana, yang kemudian diintegrasikan secara langsung ke perangkat keras simulator **RESQ-BOX**.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 🌟 Fitur Utama (Fokus Pembelajaran Mitigasi)
 
-## React Compiler
+- **Pedagogi Berbasis Design Thinking:** Platform didesain agar siswa fokus menguji logika penanganan bencana alam (Gempa & Erupsi), bukan menghafal sintaksis pemrograman.
+- **Contextual Block Editor:** Kategori blok pemrograman yang telah dikonstruksi ulang menggunakan terminologi kebencanaan (Sistem Peringatan Dini, Jalur Evakuasi, Pantauan Sensor Alam).
+- **Mission Center & Skenario Kasus:** Panduan langkah-demi-langkah berbasis skenario riil bencana geologis lereng Gunung Merapi.
+- **Hardware Integration Node:** Mengirimkan konfigurasi logika logika yang disusun di web secara langsung ke mikrokontroler ESP32 pada koper simulator melalui koneksi USB Web Serial API.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 🛠️ Arsitektur Teknologi
 
-## Expanding the ESLint configuration
+Aplikasi web ini dibangun menggunakan ekosistem *full-stack* modern:
+- **Frontend Framework:** React.js dengan Tailwind CSS (Antarmuka Responsif & Grid System)
+- **Block Engine:** Custom Blockly Core (Dimodifikasi khusus untuk menyembunyikan fungsionalitas *raw coding*)
+- **Backend Service:** Laravel (Manajemen Progres Siswa, Misi, dan Sinkronisasi Data)
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## 🚀 Perubahan Paradigma dari Versi 1.0 (Refactoring)
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+Untuk menjaga fokus substansi pada materi mitigasi bencana bagi siswa SMP, beberapa fitur teknis telah dipangkas:
+1. **Penyembunyian Kode Teks (`Show Code` Dihapus):** Siswa tidak lagi diorientasikan untuk melihat baris kode C++/Arduino.
+2. **Peniadaan Emulator Pihak Ketiga (`Wokwi` Dihapus):** Alur kerja dialihkan dari simulasi sirkuit virtual langsung menuju aksi nyata pada perangkat keras koper terintegrasi.
+3. **Abstraksi Data Sensor:** Input simulasi slider tidak lagi menggunakan nilai analog mentah `0-1023`, melainkan tingkatan status kebencanaan konvensional (Aman, Waspada, Siaga, Awas).
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## 📦 Cara Menjalankan Project (Local Development)
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+### Prasyarat
+- Node.js (Versi 18 atau yang lebih baru)
+- PHP (Versi 8.1 atau yang lebih baru) & Composer
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### Langkah Instalasi
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+1. **Clone Repositori:**
+   ```bash
+   git clone [https://github.com/username/resq-box-web.git](https://github.com/username/resq-box-web.git)
+   cd resq-box-web

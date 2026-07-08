@@ -3,40 +3,34 @@ import { useRuntimeStore } from '../../store/runtimeStore';
 // Sensor definitions for the floating panel
 const SENSORS = [
   {
-    pin: 'A0' as const,
-    label: '💧 Skala Air',
-    subtitle: 'Ketinggian air (Waspada > 400, Bahaya > 800)',
-    min: 0,
-    max: 1023,
-    unit: '',
-    color: '#3B82F6',
-    isAnalog: true,
-  },
-  {
     pin: 'A1' as const,
-    label: '🔔 Getaran',
-    subtitle: 'Intensitas gempa (Kuat > 700)',
+    label: '🔔 Intensitas Gempa',
+    subtitle: 'Aman → Waspada → Kuat',
     min: 0,
     max: 1023,
     unit: '',
     color: '#F59E0B',
     isAnalog: true,
+    minLabel: 'Aman',
+    maxLabel: 'Kuat',
   },
   {
     pin: 'A2' as const,
-    label: '🌡️ Suhu',
-    subtitle: 'Sensor LM35 (Panas > 35°C)',
+    label: '🌡️ Suhu Lingkungan',
+    subtitle: 'Normal → Panas → Berbahaya',
     min: 0,
     max: 1023,
-    unit: `°C (${0} raw)`,
+    unit: `°C`,
     color: '#EF4444',
     isAnalog: true,
+    minLabel: 'Normal',
+    maxLabel: '~50°C',
   },
 ];
 
 const BUTTONS = [
-  { pin: 'D2' as const, label: '🔘 Tombol 1', subtitle: 'Pin D2' },
-  { pin: 'D3' as const, label: '🔘 Tombol 2', subtitle: 'Pin D3' },
+  { pin: 'D2' as const, label: '🔘 Darurat 1', subtitle: 'Tekan saat bahaya' },
+  { pin: 'D3' as const, label: '🔘 Darurat 2', subtitle: 'Tekan saat bahaya' },
 ];
 
 export default function SensorPanel() {
@@ -54,11 +48,11 @@ export default function SensorPanel() {
       {/* Panel header */}
       <div className="px-md py-sm bg-surface-container-high border-b border-outline-variant flex items-center gap-sm">
         <span className="material-symbols-outlined text-secondary-container" style={{ fontVariationSettings: "'FILL' 1" }}>
-          sensors
+          eco
         </span>
         <div>
-          <div className="font-label-lg font-semibold text-on-surface">Panel Sensor</div>
-          <div className="font-label-sm text-label-sm text-on-surface-variant">Atur nilai sensor input</div>
+          <div className="font-label-lg font-semibold text-on-surface">Pemantauan Kondisi Alam</div>
+          <div className="font-label-sm text-label-sm text-on-surface-variant">Atur kondisi simulasi bencana</div>
         </div>
       </div>
 
@@ -110,8 +104,8 @@ export default function SensorPanel() {
                 />
               </div>
               <div className="flex justify-between font-label-sm text-label-sm text-on-surface-variant mt-xs">
-                <span>0</span>
-                <span>{sensor.pin === 'A2' ? '~50°C' : '1023'}</span>
+                <span>{sensor.minLabel}</span>
+                <span>{sensor.maxLabel}</span>
               </div>
             </div>
           );
@@ -119,7 +113,7 @@ export default function SensorPanel() {
 
         {/* Digital buttons */}
         <div>
-          <div className="font-label-md font-semibold text-on-surface mb-sm">Tombol Digital</div>
+          <div className="font-label-md font-semibold text-on-surface mb-sm">Tombol Darurat</div>
           <div className="flex gap-sm">
             {BUTTONS.map((btn) => {
               const isPressed = sensorValues[btn.pin] as boolean;
@@ -138,7 +132,7 @@ export default function SensorPanel() {
                     }`}
                 >
                   {btn.label}
-                  <div className="text-xs opacity-70">{isPressed ? 'DITEKAN' : 'Tahan'}</div>
+                  <div className="text-xs opacity-70">{isPressed ? 'AKTIF' : 'Tekan & Tahan'}</div>
                 </button>
               );
             })}

@@ -8,7 +8,6 @@ export interface ConsoleLog {
 }
 
 interface SensorValues {
-  A0: number;   // Water level sensor (0-1023)
   A1: number;   // Vibration sensor (0-1023)
   A2: number;   // Temperature (mapped to 0-1023, e.g. LM35)
   D2: boolean;  // Button 1
@@ -33,7 +32,6 @@ interface RuntimeState {
 export const useRuntimeStore = create<RuntimeState>((set) => ({
   isRunning: false,
   sensorValues: {
-    A0: 0,
     A1: 0,
     A2: 512,  // ~25°C default
     D2: false,

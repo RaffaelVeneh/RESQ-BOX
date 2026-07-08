@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import BlockEditor from './BlockEditor';
@@ -28,6 +28,57 @@ export default function Workspace() {
 
   const runningRef = useRef(false);
 
+  // ── WebSocket Hardware Integration ─────────────────────────────
+  const [showWsModal, setShowWsModal] = useState(false);
+  const [wsIp, setWsIp] = useState('192.168.');
+  const [wsStatus, setWsStatus] = useState<'idle'|'connecting'|'connected'>('idle');
+  const wsRef = useRef<WebSocket | null>(null);
+
+  const connectMaket = () => {
+    if (!wsIp) return;
+    setWsStatus('connecting');
+    addLog(`⏳ Menghubungkan ke Diorama Fisik (${wsIp})...`, 'system');
+    
+    try {
+      const ws = new WebSocket(`ws://${wsIp}:81`);
+      
+      ws.onopen = () => {
+        setWsStatus('connected');
+        setShowWsModal(false);
+        addLog(`✅ Diorama Fisik Terhubung! Sinyal siap dikirim.`, 'success');
+      };
+      
+      ws.onclose = () => {
+        setWsStatus('idle');
+        addLog(`🔌 Diorama Fisik Terputus.`, 'warn');
+        wsRef.current = null;
+      };
+      
+      ws.onerror = (err) => {
+        console.error('WS Error:', err);
+        setWsStatus('idle');
+        addLog(`❌ Gagal terhubung ke Diorama Fisik.`, 'error');
+        ws.close();
+      };
+
+      wsRef.current = ws;
+    } catch (e: any) {
+      setWsStatus('idle');
+      addLog(`❌ Format IP salah: ${e.message}`, 'error');
+    }
+  };
+
+  const disconnectMaket = () => {
+    if (wsRef.current) wsRef.current.close();
+  };
+
+  useEffect(() => {
+    return () => {
+      if (wsRef.current) wsRef.current.close();
+    };
+  }, []);
+  // ─────────────────────────────────────────────────────────────
+
   const activeMission = missionParam
     ? MISSIONS.find((m) => m.id === missionParam) ?? null
     : null;
@@ -48,6 +99,17 @@ export default function Workspace() {
     if (activeMission) setActiveMission(activeMission.id);
     else setActiveMission(null);
     resetValidation();
+    
+    // Clear logs and stop any running simulation on mission change
+    clearLogs();
+    setRunning(false);
+    runningRef.current = false;
+
+    return () => {
+      clearLogs();
+      setRunning(false);
+      runningRef.current = false;
+    };
   }, [activeMission?.id]);
 
   // ── Code Executor ─────────────────────────────────────────────
@@ -55,7 +117,7 @@ export default function Workspace() {
     if (isRunning) {
       setRunning(false);
       runningRef.current = false;
-      addLog('⛔ Program dihentikan.', 'warn');
+      addLog('⛔ Simulasi dihentikan.', 'warn');
       return;
     }
 
@@ -69,7 +131,9 @@ export default function Workspace() {
         useRuntimeStore.getState().addLog(text, type as any);
       },
       setPin: (_pin: string, _state: string) => {
-        // Pin state tracking (future use)
+        if (wsRef.current?.readyState === WebSocket.OPEN) {
+          wsRef.current.send(`PIN:${_pin}:${_state}`);
+        }
       },
       getPin: (pin: string) => {
         const s = useRuntimeStore.getState().sensorValues;
@@ -79,13 +143,27 @@ export default function Workspace() {
         const s = useRuntimeStore.getState().sensorValues;
         return (s as any)[pin] ?? 0;
       },
-      delay: (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms)),
+      delay: (ms: number) => new Promise<void>((resolve, reject) => {
+        if (!runningRef.current) return reject(new Error('SIMULATION_STOPPED'));
+        let elapsed = 0;
+        const interval = setInterval(() => {
+          if (!runningRef.current) {
+            clearInterval(interval);
+            return reject(new Error('SIMULATION_STOPPED'));
+          }
+          elapsed += 50;
+          if (elapsed >= ms) {
+            clearInterval(interval);
+            resolve();
+          }
+        }, 50);
+      }),
     };
 
     try {
       // ── Security: sanitize generated code ──
       if (!sanitizeCode(generatedJsCode)) {
-        addLog('🔒 Kode diblokir karena alasan keamanan. Hapus draft yang rusak.', 'error');
+        addLog('🔒 Simulasi diblokir karena alasan keamanan. Hapus draft yang rusak.', 'error');
         setRunning(false);
         runningRef.current = false;
         return;
@@ -108,6 +186,10 @@ export default function Workspace() {
         await api.delay(10);
       }
     } catch (err: any) {
+      if (err?.message === 'SIMULATION_STOPPED') {
+        // Silently abort, user pressed stop during a delay
+        return;
+      }
       console.error('Runtime error:', err);
       addLog(`❌ Error: ${err?.message ?? 'Unknown error'}`, 'error');
       setRunning(false);
@@ -129,15 +211,67 @@ export default function Workspace() {
           <div className="h-6 w-px bg-outline-variant" />
           <div>
             <h1 className="font-title-md text-title-md font-bold text-primary">
-              {activeMission ? activeMission.title : 'Coding Lab'}
+              {activeMission ? activeMission.title : 'Ruang Simulasi'}
             </h1>
             <p className="font-label-sm text-label-sm text-on-surface-variant">
-              {activeMission ? `Level ${activeMission.level}` : 'Arduino Blockly Editor'}
+              {activeMission ? (activeMission.category === 'proyek' ? `Kasus ${activeMission.level}` : `Level ${activeMission.level}`) : 'Susun Blok Instruksi'}
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-sm">
+          {/* Sambungkan Maket Button */}
+          <div className="relative">
+            <button
+              onClick={() => wsStatus === 'connected' ? disconnectMaket() : setShowWsModal(!showWsModal)}
+              className={`flex items-center gap-xs px-sm py-xs rounded-full border font-label-sm text-label-sm transition-all
+                ${wsStatus === 'connected' 
+                  ? 'bg-[#16A34A] text-white border-[#16A34A]' 
+                  : wsStatus === 'connecting'
+                    ? 'bg-yellow-500 text-white border-yellow-500'
+                    : 'bg-surface-container-high border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary'
+                }`}
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>
+                {wsStatus === 'connected' ? 'link' : 'memory'}
+              </span>
+              {wsStatus === 'connected' ? 'Diorama Terhubung' : wsStatus === 'connecting' ? 'Menghubungkan...' : 'Sambungkan Diorama Fisik'}
+            </button>
+
+            {/* IP Input Modal */}
+            {showWsModal && wsStatus !== 'connected' && (
+              <div className="absolute top-full right-0 mt-2 w-64 bg-surface-container-lowest border border-outline-variant rounded-lg shadow-lg p-md z-50">
+                <h4 className="font-title-sm text-title-sm text-on-surface mb-2">Alamat IP Diorama</h4>
+                <p className="text-xs text-on-surface-variant mb-sm">Masukkan IP dari Serial Monitor ESP32 (misal: 192.168.1.15)</p>
+                <div className="flex flex-col gap-sm">
+                  <input
+                    type="text"
+                    value={wsIp}
+                    onChange={(e) => setWsIp(e.target.value)}
+                    className="w-full bg-surface px-sm py-xs border border-outline-variant rounded font-body-sm text-on-surface focus:outline-none focus:border-primary"
+                    placeholder="192.168.x.x"
+                    disabled={wsStatus === 'connecting'}
+                  />
+                  <div className="flex justify-end gap-2">
+                    <button 
+                      onClick={() => setShowWsModal(false)}
+                      className="text-xs text-on-surface-variant hover:text-on-surface py-1 px-2"
+                    >
+                      Batal
+                    </button>
+                    <button 
+                      onClick={connectMaket}
+                      disabled={wsStatus === 'connecting'}
+                      className="bg-primary text-on-primary text-xs py-1 px-3 rounded hover:opacity-90 disabled:opacity-50"
+                    >
+                      Koneksikan
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* Sensor Panel Toggle */}
           <button
             onClick={toggleSensorPanel}
@@ -163,19 +297,8 @@ export default function Workspace() {
             <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>
               {isRunning ? 'stop' : 'play_arrow'}
             </span>
-            {isRunning ? 'Stop' : 'Run'}
+            {isRunning ? 'Berhenti' : 'Mulai'}
           </button>
-
-          {/* Wokwi link */}
-          <a
-            href="https://wokwi.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-xs px-sm py-xs bg-surface-container-high border border-outline-variant rounded-full text-on-surface-variant hover:text-primary hover:border-primary transition-colors"
-          >
-            <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>open_in_new</span>
-            <span className="font-label-caps text-label-caps">Wokwi</span>
-          </a>
         </div>
       </header>
 

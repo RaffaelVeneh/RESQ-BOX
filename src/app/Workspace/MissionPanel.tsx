@@ -39,7 +39,7 @@ export default function MissionPanel({ missionId }: { missionId: string }) {
       const result = validateMission(mission, workspace, generatedCode);
       if (result.passed) {
         completeMission(mission.id);
-        setValidationResult('pass', 'Misi selesai! Blok kode kamu sudah benar! 🎉');
+        setValidationResult('pass', 'Misi selesai! Instruksi penyelamatan kamu sudah benar! 🎉');
       } else {
         setValidationResult('fail', result.failureReason ?? 'Terjadi kesalahan yang tidak diketahui.');
       }
@@ -79,7 +79,7 @@ export default function MissionPanel({ missionId }: { missionId: string }) {
             {mission.icon}
           </span>
           <span className="font-label-caps text-label-caps text-secondary-container">
-            {CATEGORIES.find((c) => c.id === mission.category)?.title.toUpperCase()} • LEVEL {mission.level}
+            {CATEGORIES.find((c) => c.id === mission.category)?.title.toUpperCase()} • {mission.category === 'proyek' ? 'KASUS' : 'LEVEL'} {mission.level}
           </span>
         </div>
         <h2 className="font-title-md text-title-md text-primary leading-tight">{mission.title}</h2>

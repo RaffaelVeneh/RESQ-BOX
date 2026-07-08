@@ -50,6 +50,8 @@ export const useMissionStore = create<MissionState>()(
         const { completedMissionIds } = get();
         const mission = MISSIONS.find((m) => m.id === missionId);
         if (!mission) return false;
+        // Kategori proyek selalu terbuka semua misinya
+        if (mission.category === 'proyek') return true;
         // Level 1 in a category is unlocked if the category itself is unlocked
         if (mission.level === 1) {
           const catIndex = CATEGORIES.findIndex((c) => c.id === mission.category);
@@ -67,6 +69,9 @@ export const useMissionStore = create<MissionState>()(
         const { completedMissionIds } = get();
         // First category is always unlocked
         if (categoryIndex === 0) return true;
+        // Kategori proyek selalu unlocked
+        const currentCategory = CATEGORIES[categoryIndex];
+        if (currentCategory && currentCategory.id === 'proyek') return true;
         // A category is unlocked if ALL missions in the previous category are completed
         const prevCategory = CATEGORIES[categoryIndex - 1];
         const prevMissions = MISSIONS.filter((m) => m.category === prevCategory.id);

@@ -1,4 +1,4 @@
-﻿import { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { useRuntimeStore, type ConsoleLog } from '../../store/runtimeStore';
 
 const LOG_STYLES: Record<ConsoleLog['type'], { icon: string; color: string; bg: string }> = {
@@ -23,10 +23,10 @@ export default function ConsoleOutput() {
       {/* Panel header */}
       <div className="h-9 shrink-0 flex items-center px-sm gap-xs border-b border-outline-variant bg-surface-container">
         <span className="material-symbols-outlined text-on-surface-variant" style={{ fontSize: '16px' }}>
-          terminal
+          monitor_heart
         </span>
         <span className="font-label-caps text-label-caps text-on-surface-variant flex-1">
-          Output
+          Monitor Aktivitas
           {consoleLogs.length > 0 && (
             <span className="ml-xs px-xs py-[1px] rounded-full bg-primary text-on-primary font-label-caps text-[10px]">
               {consoleLogs.length}
@@ -37,7 +37,7 @@ export default function ConsoleOutput() {
         {isRunning && (
           <div className="flex items-center gap-xs text-[#16A34A] font-label-sm text-label-sm">
             <span className="w-2 h-2 rounded-full bg-[#16A34A] animate-pulse" />
-            <span className="font-label-sm text-label-sm">Running</span>
+            <span className="font-label-sm text-label-sm">Berjalan</span>
           </div>
         )}
         {/* Clear button */}
@@ -45,7 +45,7 @@ export default function ConsoleOutput() {
           <button
             onClick={clearLogs}
             className="p-xs hover:bg-surface-container-high rounded-full transition-colors text-on-surface-variant"
-            title="Bersihkan console"
+            title="Bersihkan monitor"
           >
             <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>delete_sweep</span>
           </button>
@@ -56,9 +56,9 @@ export default function ConsoleOutput() {
       <div className="flex-1 overflow-y-auto p-sm flex flex-col gap-[3px]">
         {consoleLogs.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full gap-sm text-on-surface-variant opacity-40 select-none">
-            <span className="material-symbols-outlined text-4xl">terminal</span>
+            <span className="material-symbols-outlined text-4xl">monitor_heart</span>
             <span className="font-label-sm text-label-sm text-center">
-              Klik Run untuk<br />menjalankan program
+              Klik Mulai untuk<br />menjalankan simulasi
             </span>
           </div>
         ) : (
